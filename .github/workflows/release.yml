@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish the release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FISCAL_NEST_KEYSTORE_BASE64: ${{ secrets.FISCAL_NEST_KEYSTORE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Resolve version
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="0.1.0-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Prepare release signing
+        if: env.FISCAL_NEST_KEYSTORE_BASE64 != ''
+        run: |
+          echo "$FISCAL_NEST_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          echo "FISCAL_NEST_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Test and assemble
+        env:
+          FISCAL_NEST_KEYSTORE_PASSWORD: ${{ secrets.FISCAL_NEST_KEYSTORE_PASSWORD }}
+          FISCAL_NEST_KEY_ALIAS: ${{ secrets.FISCAL_NEST_KEY_ALIAS }}
+          FISCAL_NEST_KEY_PASSWORD: ${{ secrets.FISCAL_NEST_KEY_PASSWORD }}
+        run: >-
+          ./gradlew :core:test :domain:test :app:testDebugUnitTest :app:assembleRelease
+          -Pfiscalnest.versionName="$VERSION"
+          -Pfiscalnest.versionCode=${{ github.run_number }}
+
+      - name: Name the APK
+        run: cp app/build/outputs/apk/release/app-release.apk "fiscal-nest-$VERSION.apk"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiscal-nest-${{ env.VERSION }}
+          path: fiscal-nest-*.apk
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: fiscal-nest-*.apk
+          generate_release_notes: true
