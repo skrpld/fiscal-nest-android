@@ -65,7 +65,7 @@ class OverviewScreenTest {
 
         composeRule.onAllNodesWithText(text(R.string.overview_title)).onFirst().assertExists()
         composeRule.onNodeWithText(text(R.string.overview_safe_today)).assertIsDisplayed()
-        composeRule.onNodeWithText(text(R.string.action_add_spending)).assertIsDisplayed()
+        composeRule.onAllNodesWithText(text(R.string.action_add_spending)).onFirst().assertExists()
     }
 
     @Test
