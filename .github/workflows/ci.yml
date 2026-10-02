@@ -27,7 +27,7 @@ jobs:
           java-version: '21'
 
       # Also validates the Gradle wrapper checksum.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Engine and domain tests
         run: ./gradlew :core:test :domain:test
@@ -63,7 +63,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Prepare release signing
         if: env.FISCAL_NEST_KEYSTORE_BASE64 != ''
