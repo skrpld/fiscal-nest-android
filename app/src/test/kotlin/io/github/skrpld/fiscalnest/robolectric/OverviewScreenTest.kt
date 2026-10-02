@@ -6,11 +6,15 @@
 package io.github.skrpld.fiscalnest.robolectric
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.printToString
 import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.Today
 import io.github.skrpld.fiscalnest.domain.engine.BudgetEngine
@@ -21,6 +25,7 @@ import io.github.skrpld.fiscalnest.ui.overview.OverviewScreen
 import io.github.skrpld.fiscalnest.ui.overview.OverviewUiState
 import io.github.skrpld.fiscalnest.ui.theme.FiscalNestTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -65,7 +70,12 @@ class OverviewScreenTest {
 
         composeRule.onAllNodesWithText(text(R.string.overview_title)).onFirst().assertExists()
         composeRule.onNodeWithText(text(R.string.overview_safe_today)).assertIsDisplayed()
-        composeRule.onAllNodesWithText(text(R.string.action_add_spending)).onFirst().assertExists()
+        val addSpending = text(R.string.action_add_spending)
+        val fab = composeRule.onAllNodes(hasText(addSpending) or hasContentDescription(addSpending), useUnmergedTree = true)
+        assertTrue(
+            "No '$addSpending' node in:\n" + composeRule.onRoot(useUnmergedTree = true).printToString(),
+            fab.fetchSemanticsNodes().isNotEmpty(),
+        )
     }
 
     @Test
