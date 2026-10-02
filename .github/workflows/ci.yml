@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload test and lint reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reports
           path: |
@@ -79,7 +79,7 @@ jobs:
         run: ./gradlew :app:assembleDebug :app:assembleRelease -Pfiscalnest.versionCode=${{ github.run_number }}
 
       - name: Upload APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fiscal-nest-apks
           path: app/build/outputs/apk/**/*.apk
