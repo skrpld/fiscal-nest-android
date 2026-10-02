@@ -6,8 +6,7 @@
 package io.github.skrpld.fiscalnest.ui.theme
 
 import android.os.Build
-import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -19,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 val isDynamicColorSupported: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
 /**
- * Material 3 Expressive theme of the app.
+ * Material 3 theme of the app.
  *
  * @param darkTheme use the dark color scheme
  * @param dynamicColor use the wallpaper-based system palette when the device supports it
@@ -38,9 +37,8 @@ fun FiscalNestTheme(
         darkTheme -> DarkColors
         else -> LightColors
     }
-    MaterialExpressiveTheme(
+    MaterialTheme(
         colorScheme = colorScheme,
-        motionScheme = MotionScheme.expressive(),
         shapes = Shapes(),
         typography = Typography(),
         content = content,

@@ -27,7 +27,8 @@ for the current period.
 
 ## Design
 
-- Jetpack Compose with **Material 3 Expressive** (`MaterialExpressiveTheme`, expressive motion).
+- Jetpack Compose with **Material 3** (stable Compose BOM; large collapsing app bars, tonal cards,
+  filter chips, Material date pickers and bottom sheets).
 - **Dynamic color** (Material You) from the wallpaper on Android 12+, with a hand-tuned fallback
   palette; light, dark or system theme, chosen in Settings.
 - Edge-to-edge, predictive back, splash screen, themed (monochrome) launcher icon.
