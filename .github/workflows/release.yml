@@ -16,7 +16,7 @@ jobs:
     env:
       FISCAL_NEST_KEYSTORE_BASE64: ${{ secrets.FISCAL_NEST_KEYSTORE_BASE64 }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-java@v5
         with:
