@@ -54,7 +54,7 @@ jobs:
         run: cp app/build/outputs/apk/release/app-release.apk "fiscal-nest-$VERSION.apk"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fiscal-nest-${{ env.VERSION }}
           path: fiscal-nest-*.apk
