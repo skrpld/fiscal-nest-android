@@ -16,12 +16,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.skrpld.fiscalnest.domain.model.EventKind
+import io.github.skrpld.fiscalnest.ui.envelopes.EnvelopeDetailRoute
+import io.github.skrpld.fiscalnest.ui.envelopes.EnvelopeEditorRoute
 import io.github.skrpld.fiscalnest.ui.events.EventEditorRoute
 import io.github.skrpld.fiscalnest.ui.navigation.CushionLevelsDestination
+import io.github.skrpld.fiscalnest.ui.navigation.EnvelopeDetailDestination
+import io.github.skrpld.fiscalnest.ui.navigation.EnvelopeEditorDestination
 import io.github.skrpld.fiscalnest.ui.navigation.EventEditorDestination
 import io.github.skrpld.fiscalnest.ui.navigation.MainDestination
+import io.github.skrpld.fiscalnest.ui.navigation.OnboardingDestination
 import io.github.skrpld.fiscalnest.ui.navigation.PeriodDetailDestination
 import io.github.skrpld.fiscalnest.ui.navigation.SpendingsDestination
+import io.github.skrpld.fiscalnest.ui.onboarding.OnboardingRoute
 import io.github.skrpld.fiscalnest.ui.period.PeriodDetailRoute
 import io.github.skrpld.fiscalnest.ui.settings.CushionLevelsRoute
 import io.github.skrpld.fiscalnest.ui.spending.SpendingsRoute
@@ -57,6 +63,9 @@ fun FiscalNestApp(navController: NavHostController = rememberNavController()) {
                 onOpenPeriod = { index -> navController.navigate(PeriodDetailDestination(index)) },
                 onOpenSpendings = { navController.navigate(SpendingsDestination) },
                 onOpenCushionLevels = { navController.navigate(CushionLevelsDestination) },
+                onOpenEnvelope = { id -> navController.navigate(EnvelopeDetailDestination(id)) },
+                onAddEnvelope = { navController.navigate(EnvelopeEditorDestination()) },
+                onOpenGuide = { navController.navigate(OnboardingDestination) },
             )
         }
         composable<EventEditorDestination> { entry ->
@@ -78,6 +87,28 @@ fun FiscalNestApp(navController: NavHostController = rememberNavController()) {
         }
         composable<CushionLevelsDestination> {
             CushionLevelsRoute(onBack = dropUnlessResumed { navController.popBackStack() })
+        }
+        composable<EnvelopeDetailDestination> { entry ->
+            val envelopeId = entry.toRoute<EnvelopeDetailDestination>().envelopeId
+            EnvelopeDetailRoute(
+                envelopeId = envelopeId,
+                onBack = dropUnlessResumed { navController.popBackStack() },
+                onEdit = { navController.navigate(EnvelopeEditorDestination(envelopeId)) },
+            )
+        }
+        composable<EnvelopeEditorDestination> { entry ->
+            val envelopeId = entry.toRoute<EnvelopeEditorDestination>().envelopeId
+            EnvelopeEditorRoute(
+                envelopeId = envelopeId,
+                onClose = dropUnlessResumed { navController.popBackStack() },
+                onDeleted = dropUnlessResumed {
+                    // The detail screen of a deleted envelope has nothing left to show.
+                    navController.popBackStack<MainDestination>(inclusive = false)
+                },
+            )
+        }
+        composable<OnboardingDestination> {
+            OnboardingRoute(isFirstLaunch = false, onFinish = dropUnlessResumed { navController.popBackStack() })
         }
     }
 }

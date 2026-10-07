@@ -19,11 +19,19 @@ The app answers three questions every day:
 |--------|--------------|
 | Overview | Safe daily budget, cash view, period plan, cushion progress, off-plan spending, crisis warnings, forecast of the next periods |
 | Events | Income, mandatory and optional expenses: one-time, every N days or every N months on a day (31 = last day), with optional end date |
+| Envelopes | Savings split by purpose, each with a spending rule: any time, a limit per budget period, locked until a date, or locked until a goal is reached. Deposits, withdrawals checked against the rule, history with undo |
 | What if | Distributes any amounts with your budget rules without changing anything |
-| Settings | Budget period (monthly from a pay day, or fixed length), forecast horizon, currency, cents, cushion balance and target, top-up levels, piggy bank, cash reserves, theme, JSON backup and restore |
+| Settings | Budget period (monthly from a pay day, or fixed length), forecast horizon, currency, cents, cushion balance and target, top-up levels, piggy bank, cash reserves, language, theme, JSON backup and restore, getting started guide |
 
 Off-plan purchases are logged from the overview or the spending log and count as `alreadySpent`
 for the current period.
+
+Envelopes hold money that is already set aside, so they are kept out of the period plan: the engine
+never sees them, and their balance is the sum of their deposits minus withdrawals.
+
+On the first launch a short getting started guide explains events, the daily budget and savings,
+then offers a quick setup: the monthly income and pay day (which also align the budget period) and
+the cushion balance and target. Every field is optional; the guide can be reopened from Settings.
 
 ## Design
 
@@ -34,7 +42,10 @@ for the current period.
 - Edge-to-edge, predictive back, splash screen, themed (monochrome) launcher icon.
 - Adaptive layout: navigation bar on phones, navigation rail and multi-column cards on tablets,
   foldables and landscape.
-- English and Russian, with per-app language selection on Android 13+.
+- Ten languages: English, Russian, Chinese (Simplified), Spanish, Portuguese (Brazil), French,
+  German, Hindi, Arabic (right-to-left) and Japanese. On Android 13+ the language can be chosen in
+  Settings or in the system per-app language settings; otherwise the device language is used.
+  Amounts typed with Arabic-Indic digits are accepted.
 
 ## Architecture
 

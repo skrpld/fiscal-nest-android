@@ -11,6 +11,10 @@ import io.github.skrpld.fiscalnest.domain.engine.WhatIfValues
 import io.github.skrpld.fiscalnest.domain.input.DecimalInput
 import io.github.skrpld.fiscalnest.domain.model.BudgetEvent
 import io.github.skrpld.fiscalnest.domain.model.CushionLevel
+import io.github.skrpld.fiscalnest.domain.model.Envelope
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
+import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.Limits
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
@@ -334,7 +338,152 @@ data class PeriodDraft(
     }
 }
 
-private fun <F> positiveAmount(text: String, field: F, errors: ErrorCollector<F>): BigDecimal? {
+/** Spending rules offered in the envelope editor. */
+enum class EnvelopePolicyType { FLEXIBLE, PERIOD_LIMIT, LOCKED_UNTIL, UNTIL_TARGET }
+
+/** Fields of the envelope editor. */
+enum class EnvelopeField { NAME, LIMIT, TARGET, INITIAL_BALANCE }
+
+/**
+ * A validated envelope.
+ *
+ * @property initialBalance amount to deposit when the envelope is created; `0` for none
+ */
+data class EnvelopeValues(val envelope: Envelope, val initialBalance: BigDecimal)
+
+/**
+ * Text state of the envelope editor.
+ *
+ * @property limit withdrawal limit per period, used by [EnvelopePolicyType.PERIOD_LIMIT]
+ * @property lockedUntil first day withdrawals are allowed, used by [EnvelopePolicyType.LOCKED_UNTIL]
+ * @property target optional goal; required by [EnvelopePolicyType.UNTIL_TARGET]
+ * @property initialBalance optional first deposit of a new envelope
+ */
+data class EnvelopeDraft(
+    val name: String,
+    val policyType: EnvelopePolicyType,
+    val limit: String,
+    val lockedUntil: LocalDate,
+    val target: String,
+    val initialBalance: String,
+) {
+    /** Builds the envelope with [id], or reports every invalid field. */
+    fun validate(id: String): Validation<EnvelopeValues, EnvelopeField> {
+        val errors = ErrorCollector<EnvelopeField>()
+        val trimmedName = name.trim()
+        when {
+            trimmedName.isEmpty() -> errors.add(EnvelopeField.NAME, FieldError.REQUIRED)
+            trimmedName.length > Limits.MAX_NAME_LENGTH -> errors.add(EnvelopeField.NAME, FieldError.TOO_LONG)
+        }
+        val parsedLimit = if (policyType == EnvelopePolicyType.PERIOD_LIMIT) {
+            positiveAmount(limit, EnvelopeField.LIMIT, errors)
+        } else {
+            null
+        }
+        val parsedTarget = when {
+            policyType == EnvelopePolicyType.UNTIL_TARGET -> positiveAmount(target, EnvelopeField.TARGET, errors)
+            target.isBlank() -> null
+            else -> positiveAmount(target, EnvelopeField.TARGET, errors)
+        }
+        val parsedInitial = optionalAmount(initialBalance, EnvelopeField.INITIAL_BALANCE, errors)
+        return errors.result {
+            EnvelopeValues(
+                envelope = Envelope(
+                    id = id,
+                    name = trimmedName,
+                    policy = when (policyType) {
+                        EnvelopePolicyType.FLEXIBLE -> EnvelopePolicy.Flexible
+                        EnvelopePolicyType.PERIOD_LIMIT -> EnvelopePolicy.PeriodLimit(parsedLimit!!)
+                        EnvelopePolicyType.LOCKED_UNTIL -> EnvelopePolicy.LockedUntil(lockedUntil)
+                        EnvelopePolicyType.UNTIL_TARGET -> EnvelopePolicy.UntilTarget
+                    },
+                    target = parsedTarget,
+                ),
+                initialBalance = parsedInitial!!,
+            )
+        }
+    }
+
+    companion object {
+        /** Default lock of a new envelope: half a year ahead. */
+        private const val DEFAULT_LOCK_MONTHS = 6L
+
+        /** An empty flexible envelope. */
+        fun new(today: LocalDate): EnvelopeDraft = EnvelopeDraft(
+            name = "",
+            policyType = EnvelopePolicyType.FLEXIBLE,
+            limit = "",
+            lockedUntil = today.plusMonths(DEFAULT_LOCK_MONTHS),
+            target = "",
+            initialBalance = "",
+        )
+
+        /** The editor state of an existing [envelope]. */
+        fun from(envelope: Envelope, today: LocalDate): EnvelopeDraft {
+            val policy = envelope.policy
+            return EnvelopeDraft(
+                name = envelope.name,
+                policyType = when (policy) {
+                    EnvelopePolicy.Flexible -> EnvelopePolicyType.FLEXIBLE
+                    is EnvelopePolicy.PeriodLimit -> EnvelopePolicyType.PERIOD_LIMIT
+                    is EnvelopePolicy.LockedUntil -> EnvelopePolicyType.LOCKED_UNTIL
+                    EnvelopePolicy.UntilTarget -> EnvelopePolicyType.UNTIL_TARGET
+                },
+                limit = (policy as? EnvelopePolicy.PeriodLimit)?.let { DecimalInput.formatAmount(it.limit) }.orEmpty(),
+                lockedUntil = (policy as? EnvelopePolicy.LockedUntil)?.date ?: today.plusMonths(DEFAULT_LOCK_MONTHS),
+                target = envelope.target?.let { DecimalInput.formatAmount(it) }.orEmpty(),
+                initialBalance = "",
+            )
+        }
+    }
+}
+
+/** Fields of the envelope deposit and withdrawal form. */
+enum class EnvelopeOperationField { AMOUNT, NOTE, DATE }
+
+/**
+ * Text state of the envelope deposit and withdrawal form.
+ */
+data class EnvelopeOperationDraft(
+    val amount: String = "",
+    val note: String = "",
+    val date: LocalDate,
+) {
+    /**
+     * Builds the operation with [id]. It cannot be dated after [today], and a withdrawal cannot
+     * exceed [available].
+     *
+     * @param available what the envelope policy allows to withdraw on [date]; ignored for deposits
+     */
+    fun validate(
+        id: String,
+        envelopeId: String,
+        type: EnvelopeOperationType,
+        today: LocalDate,
+        available: BigDecimal,
+    ): Validation<EnvelopeOperation, EnvelopeOperationField> {
+        val errors = ErrorCollector<EnvelopeOperationField>()
+        val parsedAmount = positiveAmount(amount, EnvelopeOperationField.AMOUNT, errors)
+        if (parsedAmount != null && type == EnvelopeOperationType.WITHDRAWAL && parsedAmount > available) {
+            errors.add(EnvelopeOperationField.AMOUNT, FieldError.EXCEEDS_AVAILABLE)
+        }
+        val trimmedNote = note.trim()
+        if (trimmedNote.length > Limits.MAX_NOTE_LENGTH) errors.add(EnvelopeOperationField.NOTE, FieldError.TOO_LONG)
+        if (date > today) errors.add(EnvelopeOperationField.DATE, FieldError.IN_THE_FUTURE)
+        return errors.result {
+            EnvelopeOperation(
+                id = id,
+                envelopeId = envelopeId,
+                type = type,
+                amount = parsedAmount!!,
+                date = date,
+                note = trimmedNote,
+            )
+        }
+    }
+}
+
+internal fun <F> positiveAmount(text: String, field: F, errors: ErrorCollector<F>): BigDecimal? {
     if (text.isBlank()) {
         errors.add(field, FieldError.REQUIRED)
         return null
@@ -353,7 +502,7 @@ private fun <F> positiveAmount(text: String, field: F, errors: ErrorCollector<F>
     }
 }
 
-private fun <F> optionalAmount(text: String, field: F, errors: ErrorCollector<F>): BigDecimal? {
+internal fun <F> optionalAmount(text: String, field: F, errors: ErrorCollector<F>): BigDecimal? {
     if (text.isBlank()) return BigDecimal.ZERO
     return DecimalInput.parse(text) ?: run {
         errors.add(field, FieldError.INVALID_NUMBER)
@@ -376,7 +525,7 @@ private fun <F> percent(text: String, field: F, errors: ErrorCollector<F>): BigD
     }
 }
 
-private fun <F> intInRange(text: String, range: IntRange, field: F, errors: ErrorCollector<F>): Int? {
+internal fun <F> intInRange(text: String, range: IntRange, field: F, errors: ErrorCollector<F>): Int? {
     val trimmed = text.trim()
     if (trimmed.isEmpty()) {
         errors.add(field, FieldError.REQUIRED)

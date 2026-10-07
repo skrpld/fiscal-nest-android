@@ -7,7 +7,7 @@ package io.github.skrpld.fiscalnest.ui.navigation
 
 import kotlinx.serialization.Serializable
 
-/** The four top-level tabs. */
+/** The top-level tabs. */
 @Serializable
 data object MainDestination
 
@@ -32,3 +32,19 @@ data object SpendingsDestination
 /** Editor of the cushion criticality levels. */
 @Serializable
 data object CushionLevelsDestination
+
+/** Details and history of the envelope with [envelopeId]. */
+@Serializable
+data class EnvelopeDetailDestination(val envelopeId: String)
+
+/**
+ * The envelope editor.
+ *
+ * @property envelopeId envelope to edit, `null` to create one
+ */
+@Serializable
+data class EnvelopeEditorDestination(val envelopeId: String? = null)
+
+/** The getting started guide, opened again from the settings. */
+@Serializable
+data object OnboardingDestination

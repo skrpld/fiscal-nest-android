@@ -85,6 +85,7 @@ fun fieldErrorText(error: FieldError): String = stringResource(
         FieldError.END_BEFORE_START -> R.string.error_end_before_start
         FieldError.IN_THE_FUTURE -> R.string.error_in_the_future
         FieldError.DUPLICATE -> R.string.error_duplicate_threshold
+        FieldError.EXCEEDS_AVAILABLE -> R.string.error_exceeds_available
     },
 )
 

@@ -23,6 +23,7 @@ object Limits {
     const val MAX_MONTHLY_START_DAY: Int = 28
     const val MAX_PERIOD_DAYS: Int = 366
     const val MAX_CUSHION_LEVELS: Int = 10
+    const val MAX_ENVELOPES: Int = 50
     val MONEY_SCALES: List<Int> = listOf(0, 2)
 
     /** `true` for a non-negative amount within the supported number of digits. */
@@ -66,6 +67,33 @@ object AppDataValidator {
             if (spending.note.length > Limits.MAX_NOTE_LENGTH) add("Spending note too long: ${spending.id}")
         }
         addAll(settingsProblems(data.settings))
+        addAll(envelopeProblems(data))
+    }
+
+    private fun envelopeProblems(data: AppData): List<String> = buildList {
+        if (data.envelopes.size > Limits.MAX_ENVELOPES) add("Too many envelopes")
+        val ids = data.envelopes.map { it.id }.toSet()
+        if (ids.size != data.envelopes.size) add("Duplicate envelope ids")
+        data.envelopes.forEach { envelope ->
+            if (envelope.name.length > Limits.MAX_NAME_LENGTH) add("Envelope name too long: ${envelope.id}")
+            val target = envelope.target
+            if (target != null && (!Limits.isValidAmount(target) || target.signum() == 0)) {
+                add("Invalid envelope target: ${envelope.id}")
+            }
+            when (val policy = envelope.policy) {
+                EnvelopePolicy.Flexible, is EnvelopePolicy.LockedUntil -> Unit
+                is EnvelopePolicy.PeriodLimit ->
+                    if (!Limits.isValidAmount(policy.limit)) add("Invalid envelope limit: ${envelope.id}")
+                EnvelopePolicy.UntilTarget -> if (target == null) add("Envelope goal without a target: ${envelope.id}")
+            }
+        }
+        val operationIds = data.envelopeOperations.map { it.id }
+        if (operationIds.size != operationIds.toSet().size) add("Duplicate envelope operation ids")
+        data.envelopeOperations.forEach { operation ->
+            if (operation.envelopeId !in ids) add("Operation of an unknown envelope: ${operation.id}")
+            if (!Limits.isValidAmount(operation.amount)) add("Invalid envelope operation amount: ${operation.id}")
+            if (operation.note.length > Limits.MAX_NOTE_LENGTH) add("Envelope operation note too long: ${operation.id}")
+        }
     }
 
     private fun settingsProblems(settings: BudgetSettings): List<String> = buildList {

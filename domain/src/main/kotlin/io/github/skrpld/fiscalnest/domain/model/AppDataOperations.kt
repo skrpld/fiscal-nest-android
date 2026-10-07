@@ -38,6 +38,36 @@ fun AppData.updateAppearance(transform: (AppearanceSettings) -> AppearanceSettin
     copy(appearance = transform(appearance))
 
 /**
+ * Inserts [envelope], or replaces the envelope with the same id in place.
+ */
+fun AppData.upsertEnvelope(envelope: Envelope): AppData = copy(envelopes = envelopes.upsert(envelope) { it.id })
+
+/**
+ * Removes the envelope with [id] together with its operations.
+ */
+fun AppData.deleteEnvelope(id: String): AppData = copy(
+    envelopes = envelopes.filterNot { it.id == id },
+    envelopeOperations = envelopeOperations.filterNot { it.envelopeId == id },
+)
+
+/**
+ * Inserts [operation], or replaces the operation with the same id in place.
+ */
+fun AppData.upsertEnvelopeOperation(operation: EnvelopeOperation): AppData =
+    copy(envelopeOperations = envelopeOperations.upsert(operation) { it.id })
+
+/**
+ * Removes the envelope operation with [id], if any.
+ */
+fun AppData.deleteEnvelopeOperation(id: String): AppData =
+    copy(envelopeOperations = envelopeOperations.filterNot { it.id == id })
+
+/**
+ * Marks the getting started guide as finished.
+ */
+fun AppData.completeOnboarding(): AppData = copy(onboardingCompleted = true)
+
+/**
  * Replaces the cushion levels, sorted by fill threshold as the engine requires.
  */
 fun BudgetSettings.withCushionLevels(levels: List<CushionLevel>): BudgetSettings =

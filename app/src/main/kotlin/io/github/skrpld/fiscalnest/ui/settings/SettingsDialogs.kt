@@ -392,7 +392,7 @@ internal fun ThemeDialog(selected: ThemeMode, onSelect: (ThemeMode) -> Unit, onD
 }
 
 @Composable
-private fun ChoiceRow(
+internal fun ChoiceRow(
     selected: Boolean,
     text: String,
     onClick: () -> Unit,
