@@ -11,6 +11,10 @@ import io.github.skrpld.fiscalnest.domain.assertDecimal
 import io.github.skrpld.fiscalnest.domain.date
 import io.github.skrpld.fiscalnest.domain.dec
 import io.github.skrpld.fiscalnest.domain.model.BudgetSettings
+import io.github.skrpld.fiscalnest.domain.model.Envelope
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.updateSettings
 import io.github.skrpld.fiscalnest.domain.readmeData
@@ -21,6 +25,19 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class BudgetEngineTest {
+    @Test
+    fun `starts the cushion from the cushion envelopes`() {
+        val data = readmeData.copy(
+            envelopes = listOf(Envelope("deposit", "Deposit", role = EnvelopeRole.CUSHION)),
+            envelopeOperations = listOf(
+                EnvelopeOperation("1", "deposit", EnvelopeOperationType.DEPOSIT, dec("10000"), date(2026, 7, 1)),
+            ),
+        )
+        val outcome = assertInstanceOf(ForecastOutcome.Success::class.java, BudgetEngine.forecast(data, date(2026, 8, 7)))
+
+        assertDecimal("0.5", outcome.current.distribution.cushionFillPct)
+    }
+
     @Test
     fun `reproduces the engine README forecast from app data`() {
         val outcome = assertInstanceOf(ForecastOutcome.Success::class.java, BudgetEngine.forecast(readmeData, date(2026, 8, 7)))

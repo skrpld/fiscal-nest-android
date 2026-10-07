@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">Разложите сбережения по конвертам: отпуск, подарки, ремонт машины. У каждого конверта своё правило — когда и сколько из него можно брать.</string>
     <string name="envelopes_total">В конвертах</string>
     <string name="envelopes_total_available">Можно потратить сейчас: %1$s</string>
-    <string name="envelopes_hint">В конвертах лежат уже отложенные деньги. На план периода они не влияют.</string>
+    <string name="envelopes_hint">Конверты — это деньги, которые у вас уже есть: карты, счета, вклады. На план периода влияют только конверты-подушки — как баланс подушки.</string>
     <string name="envelope_available">Доступно: %1$s</string>
     <string name="envelope_target_progress">%1$s из %2$s</string>
     <string name="envelope_policy_flexible">В любое время</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">Новый конверт</string>
     <string name="envelope_editor_edit">Изменить конверт</string>
     <string name="envelope_delete_text">Конверт и его история будут удалены. Это нельзя отменить.</string>
-    <string name="envelope_field_name_hint">Например, «Отпуск» или «Ремонт машины»</string>
+    <string name="envelope_field_name_hint">Например, «Дебетовая карта», «Вклад» или «Отпуск»</string>
     <string name="envelope_field_policy">Правило трат</string>
     <string name="envelope_field_limit">Лимит на период</string>
     <string name="envelope_field_locked_until">Закрыт до</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">Начальный баланс (необязательно)</string>
     <string name="envelope_field_initial_hint">Деньги, которые уже лежат в этом конверте</string>
     <string name="envelope_initial_note">Начальный баланс</string>
+    <string name="envelope_field_role">Роль</string>
+    <string name="envelope_role_general">Без роли</string>
+    <string name="envelope_role_spending">Для трат</string>
+    <string name="envelope_role_cushion">Подушка безопасности</string>
+    <string name="envelope_role_piggy_bank">Копилка</string>
+    <string name="envelope_role_general_hint">Отдельная сумма денег, например накопления на покупку.</string>
+    <string name="envelope_role_spending_hint">Карта или кошелёк для повседневных трат. Показывает, сколько можно безопасно потратить сегодня.</string>
+    <string name="envelope_role_cushion_hint">Резерв на непредвиденные случаи. Сумма всех конвертов-подушек становится балансом подушки в бюджете.</string>
+    <string name="envelope_role_piggy_bank_hint">Сюда идут накопления копилки. Показывает сумму, запланированную на этот период.</string>
+    <string name="envelope_role_spending_amount">Можно потратить сегодня: %1$s</string>
+    <string name="envelope_role_cushion_amount">Пополнение подушки по плану в этом периоде: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">В копилку по плану в этом периоде: %1$s</string>
+    <string name="settings_cushion_from_envelopes">Баланс — это сумма конвертов-подушек: %1$s. Меняйте его пополнениями и снятиями.</string>
     <string name="error_exceeds_available">Больше, чем доступно</string>
     <string name="onboarding_skip">Пропустить</string>
     <string name="onboarding_skip_setup">Настроить позже</string>

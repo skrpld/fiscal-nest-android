@@ -10,6 +10,7 @@ import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.period.DateRange
 import io.github.skrpld.fiscalnest.domain.period.PeriodResolver
 import java.math.BigDecimal
@@ -130,6 +131,24 @@ object EnvelopeCalculator {
     }
 
     /**
+     * Total balance of the envelopes with the [EnvelopeRole.CUSHION] role, never negative, or
+     * `null` when there are none.
+     */
+    fun cushionBalance(data: AppData): BigDecimal? {
+        val ids = data.envelopes.filter { it.role == EnvelopeRole.CUSHION }.map { it.id }.toSet()
+        if (ids.isEmpty()) return null
+        return data.envelopeOperations
+            .filter { it.envelopeId in ids }
+            .fold(BigDecimal.ZERO) { total, operation ->
+                when (operation.type) {
+                    EnvelopeOperationType.DEPOSIT -> total + operation.amount
+                    EnvelopeOperationType.WITHDRAWAL -> total - operation.amount
+                }
+            }
+            .max(BigDecimal.ZERO)
+    }
+
+    /**
      * Figures of every envelope on [date].
      */
     fun summary(data: AppData, date: LocalDate): EnvelopesSummary {
@@ -142,3 +161,10 @@ object EnvelopeCalculator {
         )
     }
 }
+
+/**
+ * The cushion balance the budget starts from: the cushion envelopes when there are any, otherwise
+ * the balance entered in the settings.
+ */
+fun AppData.effectiveCushionCurrent(): BigDecimal =
+    EnvelopeCalculator.cushionBalance(this) ?: settings.cushionCurrent

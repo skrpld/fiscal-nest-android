@@ -19,15 +19,17 @@ The app answers three questions every day:
 |--------|--------------|
 | Overview | Safe daily budget, cash view, period plan, cushion progress, off-plan spending, crisis warnings, forecast of the next periods |
 | Events | Income, mandatory and optional expenses: one-time, every N days or every N months on a day (31 = last day), with optional end date |
-| Envelopes | Savings split by purpose, each with a spending rule: any time, a limit per budget period, locked until a date, or locked until a goal is reached. Deposits, withdrawals checked against the rule, history with undo |
+| Envelopes | Your cards, accounts and deposits, each with a role (spending, safety cushion, piggy bank or none) and a spending rule: any time, a limit per budget period, locked until a date, or locked until a goal is reached. Deposits, withdrawals checked against the rule, history with undo |
 | What if | Distributes any amounts with your budget rules without changing anything |
 | Settings | Budget period (monthly from a pay day, or fixed length), forecast horizon, currency, cents, cushion balance and target, top-up levels, piggy bank, cash reserves, language, theme, JSON backup and restore, getting started guide |
 
 Off-plan purchases are logged from the overview or the spending log and count as `alreadySpent`
 for the current period.
 
-Envelopes hold money that is already set aside, so they are kept out of the period plan: the engine
-never sees them, and their balance is the sum of their deposits minus withdrawals.
+Envelopes hold money the user already has; their balance is the sum of their deposits minus
+withdrawals. They are kept out of the period plan, with one exception: when envelopes have the
+safety cushion role, their total replaces the cushion balance from Settings. A spending envelope
+shows what is safe to spend today, a piggy bank envelope the amount planned for the period.
 
 On the first launch a short getting started guide explains events, the daily budget and savings,
 then offers a quick setup: the monthly income and pay day (which also align the budget period) and

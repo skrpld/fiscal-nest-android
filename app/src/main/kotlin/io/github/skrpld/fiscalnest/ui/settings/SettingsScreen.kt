@@ -232,7 +232,7 @@ private fun SettingsList(
                 title = stringResource(R.string.settings_cushion),
                 summary = stringResource(
                     R.string.settings_cushion_summary,
-                    money.format(settings.cushionCurrent),
+                    money.format(state.cushionFromEnvelopes ?: settings.cushionCurrent),
                     money.format(settings.cushionTarget),
                 ),
                 onClick = { onOpenDialog(SettingsDialogType.CUSHION) },
@@ -410,6 +410,7 @@ private fun SettingsDialogs(
         )
         SettingsDialogType.CUSHION -> CushionDialog(
             current = settings.cushionCurrent,
+            envelopeBalance = state.cushionFromEnvelopes,
             target = settings.cushionTarget,
             onConfirm = {
                 viewModel.setCushion(it)

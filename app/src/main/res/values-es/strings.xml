@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">Reparte tus ahorros en sobres: vacaciones, regalos, reparaciones del coche. Cada sobre tiene su propia regla sobre cuándo y cuánto puedes sacar.</string>
     <string name="envelopes_total">En sobres</string>
     <string name="envelopes_total_available">Disponible para gastar ahora: %1$s</string>
-    <string name="envelopes_hint">Los sobres guardan dinero que ya has apartado. No cambian el plan del periodo.</string>
+    <string name="envelopes_hint">Los sobres son dinero que ya tienes: tarjetas, cuentas, depósitos. Solo los sobres del colchón afectan al plan del periodo, como saldo del colchón.</string>
     <string name="envelope_available">Disponible: %1$s</string>
     <string name="envelope_target_progress">%1$s de %2$s</string>
     <string name="envelope_policy_flexible">En cualquier momento</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">Nuevo sobre</string>
     <string name="envelope_editor_edit">Editar sobre</string>
     <string name="envelope_delete_text">Se eliminarán el sobre y su historial. No se puede deshacer.</string>
-    <string name="envelope_field_name_hint">Por ejemplo, Vacaciones o Reparación del coche</string>
+    <string name="envelope_field_name_hint">Por ejemplo, Tarjeta de débito, Depósito o Vacaciones</string>
     <string name="envelope_field_policy">Regla de gasto</string>
     <string name="envelope_field_limit">Límite por periodo</string>
     <string name="envelope_field_locked_until">Bloqueado hasta</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">Saldo inicial (opcional)</string>
     <string name="envelope_field_initial_hint">Dinero que ya hay en este sobre</string>
     <string name="envelope_initial_note">Saldo inicial</string>
+    <string name="envelope_field_role">Función</string>
+    <string name="envelope_role_general">Sin función</string>
+    <string name="envelope_role_spending">Gastos</string>
+    <string name="envelope_role_cushion">Colchón de seguridad</string>
+    <string name="envelope_role_piggy_bank">Hucha</string>
+    <string name="envelope_role_general_hint">Una suma de dinero aparte, por ejemplo ahorros para una compra.</string>
+    <string name="envelope_role_spending_hint">Una tarjeta o cartera para el día a día. Muestra cuánto puedes gastar hoy con seguridad.</string>
+    <string name="envelope_role_cushion_hint">Tu reserva para emergencias. El total de los sobres del colchón pasa a ser el saldo del colchón en el presupuesto.</string>
+    <string name="envelope_role_piggy_bank_hint">Aquí van los ahorros de la hucha. Muestra el importe previsto para este periodo.</string>
+    <string name="envelope_role_spending_amount">Puedes gastar hoy: %1$s</string>
+    <string name="envelope_role_cushion_amount">Recarga del colchón prevista este periodo: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">Previsto para la hucha este periodo: %1$s</string>
+    <string name="settings_cushion_from_envelopes">El saldo es el total de tus sobres del colchón: %1$s. Cámbialo con ingresos y retiradas.</string>
     <string name="error_exceeds_available">Más de lo disponible</string>
     <string name="onboarding_skip">Omitir</string>
     <string name="onboarding_skip_setup">Configurar más tarde</string>

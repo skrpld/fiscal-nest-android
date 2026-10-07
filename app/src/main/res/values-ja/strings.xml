@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">貯蓄を封筒に分けましょう：旅行、プレゼント、車の修理など。封筒ごとに、いつ・いくら引き出せるかのルールがあります。</string>
     <string name="envelopes_total">封筒の合計</string>
     <string name="envelopes_total_available">今使える額：%1$s</string>
-    <string name="envelopes_hint">封筒にはすでに取り分けたお金が入っています。期間の計画は変わりません。</string>
+    <string name="envelopes_hint">封筒は手元にあるお金です：カード、口座、預金など。期間の計画に影響するのはクッションの封筒だけで、クッションの残高として使われます。</string>
     <string name="envelope_available">利用可能：%1$s</string>
     <string name="envelope_target_progress">%1$s / %2$s</string>
     <string name="envelope_policy_flexible">いつでも</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">新しい封筒</string>
     <string name="envelope_editor_edit">封筒を編集</string>
     <string name="envelope_delete_text">封筒とその履歴が削除されます。この操作は元に戻せません。</string>
-    <string name="envelope_field_name_hint">例：旅行、車の修理</string>
+    <string name="envelope_field_name_hint">例：デビットカード、定期預金、旅行</string>
     <string name="envelope_field_policy">使い方のルール</string>
     <string name="envelope_field_limit">期間ごとの上限</string>
     <string name="envelope_field_locked_until">ロック期限</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">初期残高（任意）</string>
     <string name="envelope_field_initial_hint">この封筒にすでに入っているお金</string>
     <string name="envelope_initial_note">初期残高</string>
+    <string name="envelope_field_role">役割</string>
+    <string name="envelope_role_general">役割なし</string>
+    <string name="envelope_role_spending">日々の支出</string>
+    <string name="envelope_role_cushion">安全クッション</string>
+    <string name="envelope_role_piggy_bank">貯金箱</string>
+    <string name="envelope_role_general_hint">買い物のための貯金など、別に取り分けたお金。</string>
+    <string name="envelope_role_spending_hint">日々の支出に使うカードや財布。今日安全に使える額を表示します。</string>
+    <string name="envelope_role_cushion_hint">緊急時の備え。クッションの封筒の合計が、予算のクッション残高になります。</string>
+    <string name="envelope_role_piggy_bank_hint">貯金箱の貯蓄の行き先。この期間に予定している金額を表示します。</string>
+    <string name="envelope_role_spending_amount">今日使っても安全な額：%1$s</string>
+    <string name="envelope_role_cushion_amount">この期間のクッション積立予定：%1$s</string>
+    <string name="envelope_role_piggy_bank_amount">この期間の貯金箱への予定額：%1$s</string>
+    <string name="settings_cushion_from_envelopes">残高はクッションの封筒の合計です：%1$s。入金と引き出しで変更してください。</string>
     <string name="error_exceeds_available">利用可能額を超えています</string>
     <string name="onboarding_skip">スキップ</string>
     <string name="onboarding_skip_setup">あとで設定</string>

@@ -13,6 +13,8 @@ import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
+import io.github.skrpld.fiscalnest.domain.readmeData
 import io.github.skrpld.fiscalnest.domain.model.deleteEnvelope
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -115,6 +117,31 @@ class EnvelopeCalculatorTest {
         assertDecimal("6000", summary.total)
         assertDecimal("1000", summary.available)
         assertEquals(listOf("a", "b"), summary.statuses.map { it.envelope.id })
+    }
+
+    @Test
+    fun `cushion envelopes provide the cushion balance`() {
+        assertNull(EnvelopeCalculator.cushionBalance(readmeData))
+        assertDecimal("5000", readmeData.effectiveCushionCurrent())
+
+        val data = readmeData.copy(
+            envelopes = listOf(
+                Envelope("card", "Card", role = EnvelopeRole.SPENDING),
+                Envelope("deposit", "Deposit", role = EnvelopeRole.CUSHION),
+                Envelope("cash", "Cash", role = EnvelopeRole.CUSHION),
+            ),
+            envelopeOperations = listOf(
+                deposit("1", "card", "9000"),
+                deposit("2", "deposit", "7000"),
+                deposit("3", "cash", "1500"),
+                withdrawal("4", "cash", "500", 3),
+            ),
+        )
+        assertDecimal("8000", EnvelopeCalculator.cushionBalance(data)!!)
+        assertDecimal("8000", data.effectiveCushionCurrent())
+
+        val empty = readmeData.copy(envelopes = listOf(Envelope("deposit", "Deposit", role = EnvelopeRole.CUSHION)))
+        assertDecimal("0", empty.effectiveCushionCurrent())
     }
 
     @Test

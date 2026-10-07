@@ -206,7 +206,7 @@ internal fun EnvelopeCard(status: EnvelopeStatus, onClick: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(status.envelope.policy.icon, colors.secondaryContainer, colors.onSecondaryContainer)
+                IconBadge(status.envelope.role.icon, colors.secondaryContainer, colors.onSecondaryContainer)
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -216,7 +216,7 @@ internal fun EnvelopeCard(status: EnvelopeStatus, onClick: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = envelopePolicyText(status.envelope),
+                        text = envelopeSummaryText(status.envelope),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant,
                     )

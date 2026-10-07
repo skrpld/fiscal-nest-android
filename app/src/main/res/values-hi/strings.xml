@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">अपनी बचत को लिफ़ाफ़ों में बांटें: छुट्टी, तोहफ़े, गाड़ी की मरम्मत। हर लिफ़ाफ़े का अपना नियम होता है कि कब और कितना निकाला जा सकता है।</string>
     <string name="envelopes_total">लिफ़ाफ़ों में</string>
     <string name="envelopes_total_available">अभी खर्च के लिए उपलब्ध: %1$s</string>
-    <string name="envelopes_hint">लिफ़ाफ़ों में वह पैसा है जो आप पहले ही अलग रख चुके हैं। ये अवधि की योजना नहीं बदलते।</string>
+    <string name="envelopes_hint">लिफ़ाफ़े वह पैसा हैं जो आपके पास पहले से है: कार्ड, खाते, जमा। अवधि की योजना पर सिर्फ़ सुरक्षा कोष वाले लिफ़ाफ़ों का असर होता है, सुरक्षा कोष शेष के रूप में।</string>
     <string name="envelope_available">उपलब्ध: %1$s</string>
     <string name="envelope_target_progress">%2$s में से %1$s</string>
     <string name="envelope_policy_flexible">कभी भी</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">नया लिफ़ाफ़ा</string>
     <string name="envelope_editor_edit">लिफ़ाफ़ा बदलें</string>
     <string name="envelope_delete_text">लिफ़ाफ़ा और उसका इतिहास मिटा दिया जाएगा। इसे वापस नहीं लिया जा सकता।</string>
-    <string name="envelope_field_name_hint">जैसे, छुट्टी या गाड़ी की मरम्मत</string>
+    <string name="envelope_field_name_hint">जैसे, डेबिट कार्ड, सावधि जमा या छुट्टी</string>
     <string name="envelope_field_policy">खर्च का नियम</string>
     <string name="envelope_field_limit">प्रति अवधि सीमा</string>
     <string name="envelope_field_locked_until">इस तारीख तक बंद</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">शुरुआती शेष (वैकल्पिक)</string>
     <string name="envelope_field_initial_hint">इस लिफ़ाफ़े में पहले से मौजूद पैसा</string>
     <string name="envelope_initial_note">शुरुआती शेष</string>
+    <string name="envelope_field_role">भूमिका</string>
+    <string name="envelope_role_general">कोई भूमिका नहीं</string>
+    <string name="envelope_role_spending">खर्च के लिए</string>
+    <string name="envelope_role_cushion">सुरक्षा कोष</string>
+    <string name="envelope_role_piggy_bank">गुल्लक</string>
+    <string name="envelope_role_general_hint">अलग रखी गई रकम, जैसे किसी ख़रीदारी के लिए बचत।</string>
+    <string name="envelope_role_spending_hint">रोज़मर्रा के खर्च के लिए कार्ड या बटुआ। दिखाता है कि आज कितना सुरक्षित खर्च किया जा सकता है।</string>
+    <string name="envelope_role_cushion_hint">आपका आपातकालीन रिज़र्व। सभी सुरक्षा कोष लिफ़ाफ़ों का कुल योग बजट में सुरक्षा कोष का शेष बन जाता है।</string>
+    <string name="envelope_role_piggy_bank_hint">गुल्लक की बचत यहां जाती है। इस अवधि के लिए योजनाबद्ध राशि दिखाता है।</string>
+    <string name="envelope_role_spending_amount">आज सुरक्षित खर्च: %1$s</string>
+    <string name="envelope_role_cushion_amount">इस अवधि में सुरक्षा कोष में योजनाबद्ध जमा: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">इस अवधि में गुल्लक के लिए योजना: %1$s</string>
+    <string name="settings_cushion_from_envelopes">शेष आपके सुरक्षा कोष लिफ़ाफ़ों का कुल योग है: %1$s। इसे जमा और निकासी से बदलें।</string>
     <string name="error_exceeds_available">उपलब्ध से ज़्यादा</string>
     <string name="onboarding_skip">छोड़ें</string>
     <string name="onboarding_skip_setup">बाद में सेट करें</string>

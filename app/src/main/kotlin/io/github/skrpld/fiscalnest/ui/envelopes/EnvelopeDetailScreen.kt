@@ -62,6 +62,8 @@ import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.DateProvider
 import io.github.skrpld.fiscalnest.domain.data.IdGenerator
+import io.github.skrpld.fiscalnest.domain.engine.BudgetEngine
+import io.github.skrpld.fiscalnest.domain.engine.ForecastOutcome
 import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeCalculator
 import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeStatus
 import io.github.skrpld.fiscalnest.domain.form.EnvelopeOperationDraft
@@ -71,6 +73,7 @@ import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.deleteEnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.upsertEnvelopeOperation
 import io.github.skrpld.fiscalnest.ui.common.EmptyState
@@ -98,11 +101,17 @@ sealed interface EnvelopeDetailUiState {
     /** The envelope has been deleted. */
     data object Missing : EnvelopeDetailUiState
 
-    /** @property operations operations of the envelope, newest first */
+    /**
+     * @property operations operations of the envelope, newest first
+     * @property roleAmount figure of the current period that matters for the envelope's role: the
+     * planned cushion top-up, the planned piggy bank amount, or what is safe to spend today; `null`
+     * without a role or when the budget cannot be calculated
+     */
     data class Ready(
         val today: LocalDate,
         val status: EnvelopeStatus,
         val operations: List<EnvelopeOperation>,
+        val roleAmount: BigDecimal? = null,
     ) : EnvelopeDetailUiState
 }
 
@@ -128,6 +137,7 @@ class EnvelopeDetailViewModel(
                 operations = data.envelopeOperations
                     .filter { it.envelopeId == envelopeId }
                     .sortedWith(compareByDescending<EnvelopeOperation> { it.date }),
+                roleAmount = roleAmount(data, status.envelope.role, date),
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EnvelopeDetailUiState.Loading)
@@ -135,6 +145,18 @@ class EnvelopeDetailViewModel(
     /** Re-reads the date, so locks and period limits move on when the app is resumed on a new day. */
     fun refreshDate() {
         today.value = dateProvider.today()
+    }
+
+    private fun roleAmount(data: AppData, role: EnvelopeRole, date: LocalDate): BigDecimal? {
+        if (role == EnvelopeRole.GENERAL) return null
+        val outcome = BudgetEngine.forecast(data, date) as? ForecastOutcome.Success ?: return null
+        val current = outcome.current
+        return when (role) {
+            EnvelopeRole.GENERAL -> null
+            EnvelopeRole.SPENDING -> current.dailyMetrics.dailyCashflow.max(BigDecimal.ZERO)
+            EnvelopeRole.CUSHION -> current.distribution.cushionTopup
+            EnvelopeRole.PIGGY_BANK -> current.distribution.piggyBankActual
+        }
     }
 
     /**
@@ -292,7 +314,7 @@ private fun EnvelopeDetailContent(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item(key = "summary") {
-            SummaryCard(state.status, onOpenSheet)
+            SummaryCard(state.status, state.roleAmount, onOpenSheet)
         }
         item(key = "history") {
             Text(
@@ -319,7 +341,7 @@ private fun EnvelopeDetailContent(
 }
 
 @Composable
-private fun SummaryCard(status: EnvelopeStatus, onOpenSheet: (EnvelopeOperationType) -> Unit) {
+private fun SummaryCard(status: EnvelopeStatus, roleAmount: BigDecimal?, onOpenSheet: (EnvelopeOperationType) -> Unit) {
     val money = LocalMoneyFormatter.current
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -338,10 +360,31 @@ private fun SummaryCard(status: EnvelopeStatus, onOpenSheet: (EnvelopeOperationT
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            val role = status.envelope.role
+            if (role != EnvelopeRole.GENERAL) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(role.icon, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(role.labelRes()), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(status.envelope.policy.icon, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(envelopePolicyText(status.envelope), style = MaterialTheme.typography.bodyMedium)
+            }
+            if (roleAmount != null) {
+                Text(
+                    text = stringResource(
+                        when (role) {
+                            EnvelopeRole.SPENDING -> R.string.envelope_role_spending_amount
+                            EnvelopeRole.CUSHION -> R.string.envelope_role_cushion_amount
+                            else -> R.string.envelope_role_piggy_bank_amount
+                        },
+                        money.format(roleAmount),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
             val policy = status.envelope.policy
             if (policy is EnvelopePolicy.PeriodLimit) {

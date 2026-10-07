@@ -7,9 +7,13 @@ package io.github.skrpld.fiscalnest.ui.envelopes
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.LockOpen
+import androidx.compose.material.icons.rounded.Mail
+import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -19,8 +23,33 @@ import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeLock
 import io.github.skrpld.fiscalnest.domain.form.EnvelopePolicyType
 import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.ui.common.LocalDateTexts
 import io.github.skrpld.fiscalnest.ui.common.LocalMoneyFormatter
+
+@StringRes
+fun EnvelopeRole.labelRes(): Int = when (this) {
+    EnvelopeRole.GENERAL -> R.string.envelope_role_general
+    EnvelopeRole.SPENDING -> R.string.envelope_role_spending
+    EnvelopeRole.CUSHION -> R.string.envelope_role_cushion
+    EnvelopeRole.PIGGY_BANK -> R.string.envelope_role_piggy_bank
+}
+
+@StringRes
+fun EnvelopeRole.hintRes(): Int = when (this) {
+    EnvelopeRole.GENERAL -> R.string.envelope_role_general_hint
+    EnvelopeRole.SPENDING -> R.string.envelope_role_spending_hint
+    EnvelopeRole.CUSHION -> R.string.envelope_role_cushion_hint
+    EnvelopeRole.PIGGY_BANK -> R.string.envelope_role_piggy_bank_hint
+}
+
+val EnvelopeRole.icon: ImageVector
+    get() = when (this) {
+        EnvelopeRole.GENERAL -> Icons.Rounded.Mail
+        EnvelopeRole.SPENDING -> Icons.Rounded.CreditCard
+        EnvelopeRole.CUSHION -> Icons.Rounded.Security
+        EnvelopeRole.PIGGY_BANK -> Icons.Rounded.Savings
+    }
 
 @StringRes
 fun EnvelopePolicyType.labelRes(): Int = when (this) {
@@ -64,6 +93,13 @@ fun envelopePolicyText(envelope: Envelope): String {
             }
         }
     }
+}
+
+/** The role and the spending rule of [envelope]: `Spending · Up to 5 000 ₽ per period`. */
+@Composable
+fun envelopeSummaryText(envelope: Envelope): String {
+    val policy = envelopePolicyText(envelope)
+    return if (envelope.role == EnvelopeRole.GENERAL) policy else "${stringResource(envelope.role.labelRes())} · $policy"
 }
 
 /** Why money is held back, or `null` when nothing is. */

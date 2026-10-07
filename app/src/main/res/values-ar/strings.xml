@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">وزّع مدخراتك على مظاريف: إجازة، هدايا، إصلاح السيارة. لكل مظروف قاعدته الخاصة بشأن متى وكم يمكنك أن تسحب.</string>
     <string name="envelopes_total">في المظاريف</string>
     <string name="envelopes_total_available">المتاح للإنفاق الآن: %1$s</string>
-    <string name="envelopes_hint">تحتوي المظاريف على مال جنّبته بالفعل. وهي لا تغيّر خطة الفترة.</string>
+    <string name="envelopes_hint">المظاريف هي أموال لديك بالفعل: بطاقات وحسابات وودائع. وحدها مظاريف وسادة الأمان تؤثر في خطة الفترة، بوصفها رصيد الوسادة.</string>
     <string name="envelope_available">المتاح: %1$s</string>
     <string name="envelope_target_progress">%1$s من %2$s</string>
     <string name="envelope_policy_flexible">في أي وقت</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">مظروف جديد</string>
     <string name="envelope_editor_edit">تعديل المظروف</string>
     <string name="envelope_delete_text">سيتم حذف المظروف وسجله. لا يمكن التراجع عن ذلك.</string>
-    <string name="envelope_field_name_hint">مثلًا: إجازة أو إصلاح السيارة</string>
+    <string name="envelope_field_name_hint">مثلًا: بطاقة الخصم أو وديعة أو إجازة</string>
     <string name="envelope_field_policy">قاعدة الإنفاق</string>
     <string name="envelope_field_limit">الحد لكل فترة</string>
     <string name="envelope_field_locked_until">مقفل حتى</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">الرصيد الأولي (اختياري)</string>
     <string name="envelope_field_initial_hint">المال الموجود بالفعل في هذا المظروف</string>
     <string name="envelope_initial_note">الرصيد الأولي</string>
+    <string name="envelope_field_role">الدور</string>
+    <string name="envelope_role_general">بلا دور</string>
+    <string name="envelope_role_spending">للإنفاق</string>
+    <string name="envelope_role_cushion">وسادة الأمان</string>
+    <string name="envelope_role_piggy_bank">الحصالة</string>
+    <string name="envelope_role_general_hint">مبلغ منفصل من المال، مثل مدخرات لشراء شيء ما.</string>
+    <string name="envelope_role_spending_hint">بطاقة أو محفظة للإنفاق اليومي. تعرض المبلغ الذي يمكن إنفاقه بأمان اليوم.</string>
+    <string name="envelope_role_cushion_hint">احتياطيك للطوارئ. يصبح مجموع كل مظاريف وسادة الأمان رصيدَ الوسادة في الميزانية.</string>
+    <string name="envelope_role_piggy_bank_hint">تذهب مدخرات الحصالة إلى هنا. يعرض المبلغ المخطط لهذه الفترة.</string>
+    <string name="envelope_role_spending_amount">يمكن إنفاقه بأمان اليوم: %1$s</string>
+    <string name="envelope_role_cushion_amount">تعبئة الوسادة المخططة في هذه الفترة: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">المخطط للحصالة في هذه الفترة: %1$s</string>
+    <string name="settings_cushion_from_envelopes">الرصيد هو مجموع مظاريف وسادة الأمان: %1$s. غيّره بالإيداع والسحب.</string>
     <string name="error_exceeds_available">أكثر من المتاح</string>
     <string name="onboarding_skip">تخطٍّ</string>
     <string name="onboarding_skip_setup">الإعداد لاحقًا</string>

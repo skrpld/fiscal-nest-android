@@ -12,6 +12,7 @@ import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
@@ -64,8 +65,15 @@ class EnvelopeFormsTest {
 
     @Test
     fun `restores the editor state of an envelope`() {
-        val envelope = Envelope("e", "Cafes", EnvelopePolicy.PeriodLimit(dec("500.5")), target = dec("2000"))
+        val envelope = Envelope(
+            "e",
+            "Cafes",
+            EnvelopePolicy.PeriodLimit(dec("500.5")),
+            target = dec("2000"),
+            role = EnvelopeRole.SPENDING,
+        )
         val draft = EnvelopeDraft.from(envelope, today)
+        assertEquals(EnvelopeRole.SPENDING, draft.role)
         assertEquals(EnvelopePolicyType.PERIOD_LIMIT, draft.policyType)
         assertEquals("500.5", draft.limit)
         assertEquals("2000", draft.target)

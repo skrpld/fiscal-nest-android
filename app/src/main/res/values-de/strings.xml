@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">Teile deine Ersparnisse auf Umschläge auf: Urlaub, Geschenke, Autoreparatur. Jeder Umschlag hat eine eigene Regel, wann und wie viel du entnehmen kannst.</string>
     <string name="envelopes_total">In Umschlägen</string>
     <string name="envelopes_total_available">Jetzt verfügbar: %1$s</string>
-    <string name="envelopes_hint">Umschläge enthalten Geld, das du bereits zurückgelegt hast. Sie ändern den Plan des Zeitraums nicht.</string>
+    <string name="envelopes_hint">Umschläge sind Geld, das du schon hast: Karten, Konten, Festgeld. Nur Polster-Umschläge beeinflussen den Plan des Zeitraums, als Stand des Polsters.</string>
     <string name="envelope_available">Verfügbar: %1$s</string>
     <string name="envelope_target_progress">%1$s von %2$s</string>
     <string name="envelope_policy_flexible">Jederzeit</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">Neuer Umschlag</string>
     <string name="envelope_editor_edit">Umschlag bearbeiten</string>
     <string name="envelope_delete_text">Der Umschlag und sein Verlauf werden gelöscht. Das kann nicht rückgängig gemacht werden.</string>
-    <string name="envelope_field_name_hint">Zum Beispiel Urlaub oder Autoreparatur</string>
+    <string name="envelope_field_name_hint">Zum Beispiel Girokarte, Festgeld oder Urlaub</string>
     <string name="envelope_field_policy">Ausgaberegel</string>
     <string name="envelope_field_limit">Limit pro Zeitraum</string>
     <string name="envelope_field_locked_until">Gesperrt bis</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">Anfangsstand (optional)</string>
     <string name="envelope_field_initial_hint">Geld, das schon in diesem Umschlag ist</string>
     <string name="envelope_initial_note">Anfangsstand</string>
+    <string name="envelope_field_role">Rolle</string>
+    <string name="envelope_role_general">Ohne Rolle</string>
+    <string name="envelope_role_spending">Ausgaben</string>
+    <string name="envelope_role_cushion">Sicherheitspolster</string>
+    <string name="envelope_role_piggy_bank">Sparschwein</string>
+    <string name="envelope_role_general_hint">Ein separater Geldbetrag, zum Beispiel Ersparnisse für einen Kauf.</string>
+    <string name="envelope_role_spending_hint">Eine Karte oder Geldbörse für den Alltag. Zeigt, wie viel du heute sicher ausgeben kannst.</string>
+    <string name="envelope_role_cushion_hint">Deine Notfallreserve. Die Summe aller Polster-Umschläge wird zum Stand des Polsters im Budget.</string>
+    <string name="envelope_role_piggy_bank_hint">Hierhin fließen die Ersparnisse des Sparschweins. Zeigt den für diesen Zeitraum geplanten Betrag.</string>
+    <string name="envelope_role_spending_amount">Heute sicher ausgeben: %1$s</string>
+    <string name="envelope_role_cushion_amount">Geplante Auffüllung des Polsters in diesem Zeitraum: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">Fürs Sparschwein geplant in diesem Zeitraum: %1$s</string>
+    <string name="settings_cushion_from_envelopes">Der Stand ist die Summe deiner Polster-Umschläge: %1$s. Ändere ihn durch Einzahlungen und Entnahmen.</string>
     <string name="error_exceeds_available">Mehr als verfügbar</string>
     <string name="onboarding_skip">Überspringen</string>
     <string name="onboarding_skip_setup">Später einrichten</string>

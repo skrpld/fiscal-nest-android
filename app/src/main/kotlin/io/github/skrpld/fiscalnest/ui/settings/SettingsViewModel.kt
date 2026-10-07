@@ -11,6 +11,7 @@ import fiscalnest.core.CashReserve
 import io.github.skrpld.fiscalnest.domain.data.AppDataCodec
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.DateProvider
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeCalculator
 import io.github.skrpld.fiscalnest.domain.form.CushionValues
 import io.github.skrpld.fiscalnest.domain.form.PiggyBankValues
 import io.github.skrpld.fiscalnest.domain.model.AppData
@@ -36,6 +37,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.math.BigDecimal
 import java.time.LocalDate
 
 /**
@@ -44,10 +46,12 @@ import java.time.LocalDate
 sealed interface SettingsUiState {
     data object Loading : SettingsUiState
 
+    /** @property cushionFromEnvelopes balance of the cushion envelopes; `null` when there are none */
     data class Ready(
         val today: LocalDate,
         val settings: BudgetSettings,
         val appearance: AppearanceSettings,
+        val cushionFromEnvelopes: BigDecimal? = null,
     ) : SettingsUiState
 }
 
@@ -65,7 +69,7 @@ class SettingsViewModel(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     val uiState: StateFlow<SettingsUiState> = repository.data
-        .map { SettingsUiState.Ready(dateProvider.today(), it.settings, it.appearance) }
+        .map { SettingsUiState.Ready(dateProvider.today(), it.settings, it.appearance, EnvelopeCalculator.cushionBalance(it)) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState.Loading)
 
     private val messageChannel = Channel<SettingsMessage>(Channel.BUFFERED)

@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">Divida sua poupança em envelopes: viagem, presentes, conserto do carro. Cada envelope tem sua própria regra de quando e quanto você pode retirar.</string>
     <string name="envelopes_total">Nos envelopes</string>
     <string name="envelopes_total_available">Disponível para gastar agora: %1$s</string>
-    <string name="envelopes_hint">Os envelopes guardam dinheiro que você já separou. Eles não alteram o plano do período.</string>
+    <string name="envelopes_hint">Envelopes são dinheiro que você já tem: cartões, contas, aplicações. Só os envelopes de reserva afetam o plano do período, como saldo da reserva.</string>
     <string name="envelope_available">Disponível: %1$s</string>
     <string name="envelope_target_progress">%1$s de %2$s</string>
     <string name="envelope_policy_flexible">A qualquer momento</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">Novo envelope</string>
     <string name="envelope_editor_edit">Editar envelope</string>
     <string name="envelope_delete_text">O envelope e o histórico dele serão excluídos. Não é possível desfazer.</string>
-    <string name="envelope_field_name_hint">Por exemplo, Viagem ou Conserto do carro</string>
+    <string name="envelope_field_name_hint">Por exemplo, Cartão de débito, Aplicação ou Viagem</string>
     <string name="envelope_field_policy">Regra de gastos</string>
     <string name="envelope_field_limit">Limite por período</string>
     <string name="envelope_field_locked_until">Bloqueado até</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">Saldo inicial (opcional)</string>
     <string name="envelope_field_initial_hint">Dinheiro que já está neste envelope</string>
     <string name="envelope_initial_note">Saldo inicial</string>
+    <string name="envelope_field_role">Função</string>
+    <string name="envelope_role_general">Sem função</string>
+    <string name="envelope_role_spending">Gastos</string>
+    <string name="envelope_role_cushion">Reserva de emergência</string>
+    <string name="envelope_role_piggy_bank">Cofrinho</string>
+    <string name="envelope_role_general_hint">Um valor separado, por exemplo uma poupança para uma compra.</string>
+    <string name="envelope_role_spending_hint">Um cartão ou carteira para o dia a dia. Mostra quanto é seguro gastar hoje.</string>
+    <string name="envelope_role_cushion_hint">Sua reserva para emergências. O total dos envelopes de reserva vira o saldo da reserva no orçamento.</string>
+    <string name="envelope_role_piggy_bank_hint">Aqui vai a poupança do cofrinho. Mostra o valor planejado para este período.</string>
+    <string name="envelope_role_spending_amount">Seguro para gastar hoje: %1$s</string>
+    <string name="envelope_role_cushion_amount">Aporte à reserva planejado neste período: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">Planejado para o cofrinho neste período: %1$s</string>
+    <string name="settings_cushion_from_envelopes">O saldo é o total dos seus envelopes de reserva: %1$s. Altere-o com depósitos e retiradas.</string>
     <string name="error_exceeds_available">Mais do que o disponível</string>
     <string name="onboarding_skip">Pular</string>
     <string name="onboarding_skip_setup">Configurar depois</string>

@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">把储蓄分装进信封：旅行基金、礼物、修车。每个信封都有自己的规则，决定何时能取、能取多少。</string>
     <string name="envelopes_total">信封中共有</string>
     <string name="envelopes_total_available">现在可花：%1$s</string>
-    <string name="envelopes_hint">信封里是你已经存下的钱，不影响周期计划。</string>
+    <string name="envelopes_hint">信封就是你已有的钱：银行卡、账户、存款。只有安全垫信封会作为安全垫余额影响周期计划。</string>
     <string name="envelope_available">可用：%1$s</string>
     <string name="envelope_target_progress">%1$s / %2$s</string>
     <string name="envelope_policy_flexible">随时可取</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">新信封</string>
     <string name="envelope_editor_edit">编辑信封</string>
     <string name="envelope_delete_text">信封及其历史将被删除。此操作无法撤销。</string>
-    <string name="envelope_field_name_hint">例如“旅行”或“修车”</string>
+    <string name="envelope_field_name_hint">例如“借记卡”“存款”或“旅行”</string>
     <string name="envelope_field_policy">花费规则</string>
     <string name="envelope_field_limit">每周期限额</string>
     <string name="envelope_field_locked_until">锁定至</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">初始余额（可选）</string>
     <string name="envelope_field_initial_hint">信封中已有的钱</string>
     <string name="envelope_initial_note">初始余额</string>
+    <string name="envelope_field_role">用途</string>
+    <string name="envelope_role_general">无用途</string>
+    <string name="envelope_role_spending">日常花费</string>
+    <string name="envelope_role_cushion">安全垫</string>
+    <string name="envelope_role_piggy_bank">储蓄罐</string>
+    <string name="envelope_role_general_hint">一笔单独的钱，例如为购物攒的钱。</string>
+    <string name="envelope_role_spending_hint">用于日常花费的银行卡或钱包。显示今天可放心花多少。</string>
+    <string name="envelope_role_cushion_hint">你的应急储备。所有安全垫信封的总额将作为预算中的安全垫余额。</string>
+    <string name="envelope_role_piggy_bank_hint">储蓄罐的储蓄存放在这里。显示本周期的计划金额。</string>
+    <string name="envelope_role_spending_amount">今天可放心花：%1$s</string>
+    <string name="envelope_role_cushion_amount">本周期计划充入安全垫：%1$s</string>
+    <string name="envelope_role_piggy_bank_amount">本周期计划存入储蓄罐：%1$s</string>
+    <string name="settings_cushion_from_envelopes">余额为安全垫信封的总额：%1$s。通过存入和取出来更改。</string>
     <string name="error_exceeds_available">超过可用金额</string>
     <string name="onboarding_skip">跳过</string>
     <string name="onboarding_skip_setup">稍后设置</string>

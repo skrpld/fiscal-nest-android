@@ -61,6 +61,7 @@ import io.github.skrpld.fiscalnest.domain.model.ThemeMode
 import io.github.skrpld.fiscalnest.ui.common.ChoiceChips
 import io.github.skrpld.fiscalnest.ui.common.DateField
 import io.github.skrpld.fiscalnest.ui.common.IntegerField
+import io.github.skrpld.fiscalnest.ui.common.LocalMoneyFormatter
 import io.github.skrpld.fiscalnest.ui.common.MoneyField
 import io.github.skrpld.fiscalnest.ui.common.PercentField
 import io.github.skrpld.fiscalnest.ui.common.descriptionRes
@@ -231,6 +232,7 @@ internal fun CurrencyDialog(
 internal fun CushionDialog(
     current: BigDecimal,
     target: BigDecimal,
+    envelopeBalance: BigDecimal?,
     onConfirm: (CushionValues) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -248,13 +250,20 @@ internal fun CushionDialog(
         },
         onDismiss = onDismiss,
     ) {
-        HintText(stringResource(R.string.settings_cushion_hint))
-        MoneyField(
-            value = currentText,
-            onValueChange = { currentText = it },
-            label = stringResource(R.string.field_cushion_current),
-            error = errors[CushionField.CURRENT],
-        )
+        if (envelopeBalance == null) {
+            HintText(stringResource(R.string.settings_cushion_hint))
+            MoneyField(
+                value = currentText,
+                onValueChange = { currentText = it },
+                label = stringResource(R.string.field_cushion_current),
+                error = errors[CushionField.CURRENT],
+            )
+        } else {
+            // The balance comes from the cushion envelopes; the stored one is kept as it was.
+            HintText(
+                stringResource(R.string.settings_cushion_from_envelopes, LocalMoneyFormatter.current.format(envelopeBalance)),
+            )
+        }
         MoneyField(
             value = targetText,
             onValueChange = { targetText = it },

@@ -213,8 +213,28 @@ sealed interface EnvelopePolicy {
 }
 
 /**
- * A share of the user's savings set aside for one purpose. Envelopes are kept apart from the
- * period plan: the engine never sees them, and their balance comes from [EnvelopeOperation]s.
+ * What an envelope is used for in the budget. In practice an envelope is often a real card,
+ * account or deposit.
+ */
+@Serializable
+enum class EnvelopeRole {
+    /** A separate pot of money with no special meaning for the budget. */
+    GENERAL,
+
+    /** A card or wallet for everyday spending. */
+    SPENDING,
+
+    /** The safety cushion: the balances of these envelopes are the cushion balance. */
+    CUSHION,
+
+    /** Where the piggy bank savings of each period go. */
+    PIGGY_BANK,
+}
+
+/**
+ * A share of the user's money set aside for one purpose. Its balance comes from
+ * [EnvelopeOperation]s. Envelopes stay out of the period plan, except that envelopes with the
+ * [EnvelopeRole.CUSHION] role provide the cushion balance the plan starts from.
  *
  * @property target amount the user wants to collect; required by [EnvelopePolicy.UntilTarget]
  */
@@ -224,6 +244,7 @@ data class Envelope(
     val name: String,
     val policy: EnvelopePolicy = EnvelopePolicy.Flexible,
     val target: BigDecimal? = null,
+    val role: EnvelopeRole = EnvelopeRole.GENERAL,
 )
 
 /**

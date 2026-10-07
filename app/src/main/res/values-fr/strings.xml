@@ -260,7 +260,7 @@
     <string name="envelopes_empty_text">Répartissez votre épargne dans des enveloppes : vacances, cadeaux, réparations de la voiture. Chaque enveloppe a sa propre règle sur le moment et le montant des retraits.</string>
     <string name="envelopes_total">Dans les enveloppes</string>
     <string name="envelopes_total_available">Dépensable maintenant : %1$s</string>
-    <string name="envelopes_hint">Les enveloppes contiennent de l\'argent déjà mis de côté. Elles ne modifient pas le plan de la période.</string>
+    <string name="envelopes_hint">Les enveloppes, c\'est l\'argent que vous avez déjà : cartes, comptes, placements. Seules les enveloppes coussin influencent le plan de la période, comme solde du coussin.</string>
     <string name="envelope_available">Disponible : %1$s</string>
     <string name="envelope_target_progress">%1$s sur %2$s</string>
     <string name="envelope_policy_flexible">À tout moment</string>
@@ -293,7 +293,7 @@
     <string name="envelope_editor_new">Nouvelle enveloppe</string>
     <string name="envelope_editor_edit">Modifier l\'enveloppe</string>
     <string name="envelope_delete_text">L\'enveloppe et son historique seront supprimés. Cette action est irréversible.</string>
-    <string name="envelope_field_name_hint">Par exemple, Vacances ou Réparations de la voiture</string>
+    <string name="envelope_field_name_hint">Par exemple, Carte bancaire, Livret ou Vacances</string>
     <string name="envelope_field_policy">Règle de dépense</string>
     <string name="envelope_field_limit">Plafond par période</string>
     <string name="envelope_field_locked_until">Bloquée jusqu\'au</string>
@@ -302,6 +302,19 @@
     <string name="envelope_field_initial">Solde initial (facultatif)</string>
     <string name="envelope_field_initial_hint">Argent déjà dans cette enveloppe</string>
     <string name="envelope_initial_note">Solde initial</string>
+    <string name="envelope_field_role">Rôle</string>
+    <string name="envelope_role_general">Sans rôle</string>
+    <string name="envelope_role_spending">Dépenses</string>
+    <string name="envelope_role_cushion">Coussin de sécurité</string>
+    <string name="envelope_role_piggy_bank">Tirelire</string>
+    <string name="envelope_role_general_hint">Une somme à part, par exemple une épargne pour un achat.</string>
+    <string name="envelope_role_spending_hint">Une carte ou un portefeuille pour le quotidien. Indique combien vous pouvez dépenser aujourd\'hui sans risque.</string>
+    <string name="envelope_role_cushion_hint">Votre réserve pour les imprévus. Le total des enveloppes coussin devient le solde du coussin dans le budget.</string>
+    <string name="envelope_role_piggy_bank_hint">L\'épargne de la tirelire va ici. Indique le montant prévu pour cette période.</string>
+    <string name="envelope_role_spending_amount">Dépensable aujourd\'hui : %1$s</string>
+    <string name="envelope_role_cushion_amount">Alimentation du coussin prévue sur cette période : %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">Prévu pour la tirelire sur cette période : %1$s</string>
+    <string name="settings_cushion_from_envelopes">Le solde est le total de vos enveloppes coussin : %1$s. Modifiez-le par des dépôts et des retraits.</string>
     <string name="error_exceeds_available">Supérieur au disponible</string>
     <string name="onboarding_skip">Passer</string>
     <string name="onboarding_skip_setup">Configurer plus tard</string>

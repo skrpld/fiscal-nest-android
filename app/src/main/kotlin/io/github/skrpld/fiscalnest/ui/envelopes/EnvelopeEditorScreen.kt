@@ -49,6 +49,7 @@ import io.github.skrpld.fiscalnest.domain.form.FieldError
 import io.github.skrpld.fiscalnest.domain.form.Validation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.Limits
 import io.github.skrpld.fiscalnest.domain.model.deleteEnvelope
 import io.github.skrpld.fiscalnest.domain.model.upsertEnvelope
@@ -288,6 +289,14 @@ private fun EnvelopeForm(
             error = errors[EnvelopeField.NAME],
             supportingText = stringResource(R.string.envelope_field_name_hint),
         )
+        FormLabel(stringResource(R.string.envelope_field_role))
+        ChoiceChips(
+            options = EnvelopeRole.entries,
+            selected = draft.role,
+            onSelect = { onDraftChange(draft.copy(role = it)) },
+            label = { stringResource(it.labelRes()) },
+        )
+        HintText(stringResource(draft.role.hintRes()))
         FormLabel(stringResource(R.string.envelope_field_policy))
         ChoiceChips(
             options = EnvelopePolicyType.entries,

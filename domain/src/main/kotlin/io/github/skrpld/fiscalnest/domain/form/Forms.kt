@@ -15,6 +15,7 @@ import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.Limits
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
@@ -361,6 +362,7 @@ data class EnvelopeValues(val envelope: Envelope, val initialBalance: BigDecimal
  */
 data class EnvelopeDraft(
     val name: String,
+    val role: EnvelopeRole,
     val policyType: EnvelopePolicyType,
     val limit: String,
     val lockedUntil: LocalDate,
@@ -398,6 +400,7 @@ data class EnvelopeDraft(
                         EnvelopePolicyType.UNTIL_TARGET -> EnvelopePolicy.UntilTarget
                     },
                     target = parsedTarget,
+                    role = role,
                 ),
                 initialBalance = parsedInitial!!,
             )
@@ -408,9 +411,10 @@ data class EnvelopeDraft(
         /** Default lock of a new envelope: half a year ahead. */
         private const val DEFAULT_LOCK_MONTHS = 6L
 
-        /** An empty flexible envelope. */
+        /** An empty flexible envelope without a role. */
         fun new(today: LocalDate): EnvelopeDraft = EnvelopeDraft(
             name = "",
+            role = EnvelopeRole.GENERAL,
             policyType = EnvelopePolicyType.FLEXIBLE,
             limit = "",
             lockedUntil = today.plusMonths(DEFAULT_LOCK_MONTHS),
@@ -423,6 +427,7 @@ data class EnvelopeDraft(
             val policy = envelope.policy
             return EnvelopeDraft(
                 name = envelope.name,
+                role = envelope.role,
                 policyType = when (policy) {
                     EnvelopePolicy.Flexible -> EnvelopePolicyType.FLEXIBLE
                     is EnvelopePolicy.PeriodLimit -> EnvelopePolicyType.PERIOD_LIMIT

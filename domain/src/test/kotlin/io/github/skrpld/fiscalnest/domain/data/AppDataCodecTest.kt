@@ -15,6 +15,7 @@ import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
@@ -47,7 +48,7 @@ class AppDataCodecTest {
                 Envelope("cafes", "Cafes", EnvelopePolicy.PeriodLimit(dec("5000"))),
                 Envelope("deposit", "Deposit", EnvelopePolicy.LockedUntil(date(2027, 1, 1))),
                 Envelope("vacation", "Vacation", EnvelopePolicy.UntilTarget, target = dec("100000")),
-                Envelope("gifts", "Gifts"),
+                Envelope("gifts", "Gifts", role = EnvelopeRole.PIGGY_BANK),
             ),
             envelopeOperations = listOf(
                 EnvelopeOperation("op1", "cafes", EnvelopeOperationType.DEPOSIT, dec("10000"), date(2026, 8, 1), "Start"),

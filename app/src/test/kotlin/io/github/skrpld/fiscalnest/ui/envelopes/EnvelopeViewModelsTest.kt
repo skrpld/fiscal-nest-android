@@ -20,8 +20,11 @@ import io.github.skrpld.fiscalnest.domain.model.Envelope
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.sampleData
 import io.github.skrpld.fiscalnest.sequentialIds
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -113,6 +116,22 @@ class EnvelopeViewModelsTest {
         val deposit = viewModel.record(EnvelopeOperationType.DEPOSIT, EnvelopeOperationDraft(amount = "100", date = Today))
         assertTrue(deposit is Validation.Valid)
         assertEquals(3, repository.current.envelopeOperations.size)
+    }
+
+    @Test
+    fun `saves the role and shows the planned amount of the role`() = runTest {
+        val repository = InMemoryBudgetRepository(sampleData())
+        val editor = EnvelopeEditorViewModel(repository, FixedToday, sequentialIds(), envelopeId = null)
+        editor.onDraftChange(editor.uiState.draft!!.copy(name = "Savings account", role = EnvelopeRole.PIGGY_BANK))
+        editor.save(initialNote = "")
+        val envelope = repository.current.envelopes.single()
+        assertEquals(EnvelopeRole.PIGGY_BANK, envelope.role)
+
+        val detail = EnvelopeDetailViewModel(repository, FixedToday, sequentialIds(), envelope.id)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { detail.uiState.collect {} }
+        val state = detail.uiState.value as EnvelopeDetailUiState.Ready
+        // The engine README example plans 5 000 for the piggy bank in August.
+        assertDecimal("5000", state.roleAmount!!)
     }
 
     @Test

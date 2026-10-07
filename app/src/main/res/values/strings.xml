@@ -261,7 +261,7 @@
     <string name="envelopes_empty_text">Split your savings into envelopes: a vacation fund, gifts, car repairs. Each envelope has its own rule for when and how much you can take out.</string>
     <string name="envelopes_total">In envelopes</string>
     <string name="envelopes_total_available">Available to spend now: %1$s</string>
-    <string name="envelopes_hint">Envelopes hold money you have already set aside. They don\'t change the period plan.</string>
+    <string name="envelopes_hint">Envelopes are money you already have: cards, accounts, deposits. Only cushion envelopes affect the period plan, as the cushion balance.</string>
     <string name="envelope_available">Available: %1$s</string>
     <string name="envelope_target_progress">%1$s of %2$s</string>
     <string name="envelope_policy_flexible">Any time</string>
@@ -294,7 +294,7 @@
     <string name="envelope_editor_new">New envelope</string>
     <string name="envelope_editor_edit">Edit envelope</string>
     <string name="envelope_delete_text">The envelope and its history will be deleted. This can\'t be undone.</string>
-    <string name="envelope_field_name_hint">For example, Vacation or Car repairs</string>
+    <string name="envelope_field_name_hint">For example, Debit card, Deposit or Vacation</string>
     <string name="envelope_field_policy">Spending rule</string>
     <string name="envelope_field_limit">Limit per period</string>
     <string name="envelope_field_locked_until">Locked until</string>
@@ -303,6 +303,19 @@
     <string name="envelope_field_initial">Initial balance (optional)</string>
     <string name="envelope_field_initial_hint">Money already in this envelope</string>
     <string name="envelope_initial_note">Initial balance</string>
+    <string name="envelope_field_role">Role</string>
+    <string name="envelope_role_general">No role</string>
+    <string name="envelope_role_spending">Spending</string>
+    <string name="envelope_role_cushion">Safety cushion</string>
+    <string name="envelope_role_piggy_bank">Piggy bank</string>
+    <string name="envelope_role_general_hint">A separate pot of money, such as savings for a purchase.</string>
+    <string name="envelope_role_spending_hint">A card or wallet for everyday spending. Shows how much is safe to spend today.</string>
+    <string name="envelope_role_cushion_hint">Your emergency reserve. The total of all cushion envelopes becomes the cushion balance of the budget.</string>
+    <string name="envelope_role_piggy_bank_hint">Where the piggy bank savings go. Shows the amount planned for this period.</string>
+    <string name="envelope_role_spending_amount">Safe to spend today: %1$s</string>
+    <string name="envelope_role_cushion_amount">Planned cushion top-up this period: %1$s</string>
+    <string name="envelope_role_piggy_bank_amount">Planned for the piggy bank this period: %1$s</string>
+    <string name="settings_cushion_from_envelopes">The balance is the total of your cushion envelopes: %1$s. Change it with deposits and withdrawals.</string>
     <string name="error_exceeds_available">More than is available</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_skip_setup">Set up later</string>
