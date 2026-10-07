@@ -11,6 +11,11 @@ import io.github.skrpld.fiscalnest.domain.dec
 import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.AppearanceSettings
 import io.github.skrpld.fiscalnest.domain.model.BudgetEvent
+import io.github.skrpld.fiscalnest.domain.model.Envelope
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
+import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
@@ -39,6 +44,17 @@ class AppDataCodecTest {
                 ),
             ),
             appearance = AppearanceSettings(themeMode = ThemeMode.DARK, dynamicColor = false),
+            envelopes = listOf(
+                Envelope("cafes", "Cafes", EnvelopePolicy.PeriodLimit(dec("5000"))),
+                Envelope("deposit", "Deposit", EnvelopePolicy.LockedUntil(date(2027, 1, 1))),
+                Envelope("vacation", "Vacation", EnvelopePolicy.UntilTarget, target = dec("100000")),
+                Envelope("gifts", "Gifts", role = EnvelopeRole.PIGGY_BANK),
+            ),
+            envelopeOperations = listOf(
+                EnvelopeOperation("op1", "cafes", EnvelopeOperationType.DEPOSIT, dec("10000"), date(2026, 8, 1), "Start"),
+                EnvelopeOperation("op2", "cafes", EnvelopeOperationType.WITHDRAWAL, dec("1200.50"), date(2026, 8, 3)),
+            ),
+            onboardingCompleted = false,
         )
         .updateSettings {
             it.copy(
@@ -68,6 +84,8 @@ class AppDataCodecTest {
         assertEquals(3, data.settings.forecastPeriods)
         assertEquals(AppData().appearance, data.appearance)
         assertEquals(AppData.SCHEMA_VERSION, data.schemaVersion)
+        assertTrue(data.envelopes.isEmpty())
+        assertTrue(data.onboardingCompleted, "data saved before the guide existed must not show it")
     }
 
     @Test
@@ -82,6 +100,15 @@ class AppDataCodecTest {
         assertTrue(AppDataCodec.decodeBackup("""{"events":[{"id":"x"}]}""").isFailure)
         assertTrue(AppDataCodec.decodeBackup("""{"settings":{"forecastPeriods":0}}""").isFailure)
         assertTrue(AppDataCodec.decodeBackup("""{"schemaVersion":99}""").isFailure)
+        assertTrue(
+            AppDataCodec.decodeBackup(
+                """{"envelopeOperations":[{"id":"o","envelopeId":"missing","type":"DEPOSIT",""" +
+                    """"amount":"1","date":"2026-01-01"}]}""",
+            ).isFailure,
+        )
+        assertTrue(
+            AppDataCodec.decodeBackup("""{"envelopes":[{"id":"e","name":"n","policy":{"type":"until_target"}}]}""").isFailure,
+        )
         assertTrue(
             AppDataCodec.decodeBackup(
                 """{"events":[{"id":"x","name":"n","kind":"INCOME","amount":"1E+999999999",""" +

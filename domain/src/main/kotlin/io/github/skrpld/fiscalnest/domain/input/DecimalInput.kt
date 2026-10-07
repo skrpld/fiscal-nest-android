@@ -13,10 +13,11 @@ import java.math.BigDecimal
  *
  * Spaces, no-break spaces, apostrophes and underscores are digit grouping. When both `.` and `,`
  * appear, the last one is the decimal separator. A single `.` or `,` is the decimal separator;
- * several identical ones are grouping (`1,234,567`).
+ * several identical ones are grouping (`1,234,567`). Digits of other scripts, such as Arabic-Indic
+ * `٣`, and the Arabic separators `٫` and `٬` are accepted too.
  */
 object DecimalInput {
-    private val ignored = setOf(' ', ' ', ' ', '\'', '_', '’')
+    private val ignored = setOf(' ', ' ', ' ', '\'', '_', '’', ARABIC_GROUPING)
     private val digits = Regex("\\d*\\.?\\d*")
 
     /**
@@ -24,7 +25,7 @@ object DecimalInput {
      * longer than [Limits] allow.
      */
     fun parse(text: String): BigDecimal? {
-        val compact = text.trim().filterNot { it in ignored }
+        val compact = text.trim().filterNot { it in ignored }.map(::toAsciiDigit).joinToString("")
         if (compact.isEmpty()) return null
         val normalized = normalizeSeparators(compact) ?: return null
         if (normalized.isEmpty() || normalized == "." || !digits.matches(normalized)) return null
@@ -66,5 +67,13 @@ object DecimalInput {
         }
     }
 
+    private fun toAsciiDigit(char: Char): Char = when {
+        char == ARABIC_DECIMAL -> '.'
+        char in '0'..'9' || !Character.isDigit(char) -> char
+        else -> '0' + Character.digit(char, 10)
+    }
+
     private val HUNDRED = BigDecimal(100)
+    private const val ARABIC_DECIMAL = '\u066B'
+    private const val ARABIC_GROUPING = '\u066C'
 }

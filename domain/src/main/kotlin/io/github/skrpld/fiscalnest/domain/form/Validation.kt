@@ -17,6 +17,7 @@ enum class FieldError {
     END_BEFORE_START,
     IN_THE_FUTURE,
     DUPLICATE,
+    EXCEEDS_AVAILABLE,
 }
 
 /**

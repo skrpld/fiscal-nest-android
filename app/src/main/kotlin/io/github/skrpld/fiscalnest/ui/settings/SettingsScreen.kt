@@ -23,10 +23,12 @@ import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Timeline
 import androidx.compose.material.icons.rounded.Tune
@@ -73,11 +75,12 @@ import io.github.skrpld.fiscalnest.ui.common.withContentPadding
 import io.github.skrpld.fiscalnest.ui.theme.isDynamicColorSupported
 import java.time.LocalDate
 
-private enum class SettingsDialogType { PERIOD, HORIZON, CURRENCY, CUSHION, PIGGY_BANK, RESERVES, THEME, IMPORT, RESET }
+private enum class SettingsDialogType { PERIOD, HORIZON, CURRENCY, CUSHION, PIGGY_BANK, RESERVES, THEME, LANGUAGE, IMPORT, RESET }
 
 @Composable
 fun SettingsRoute(
     onOpenCushionLevels: () -> Unit,
+    onOpenGuide: () -> Unit,
     viewModel: SettingsViewModel = appViewModel { container ->
         SettingsViewModel(container.repository, container.dateProvider, container::initialData)
     },
@@ -112,6 +115,7 @@ fun SettingsRoute(
         actions = SettingsActions(
             viewModel = viewModel,
             onOpenCushionLevels = onOpenCushionLevels,
+            onOpenGuide = onOpenGuide,
             onExport = { today -> exportLauncher.launch("fiscal-nest-$today.json") },
             onImport = { importLauncher.launch(arrayOf(BACKUP_MIME_TYPE, "text/plain", "application/octet-stream")) },
         ),
@@ -126,6 +130,7 @@ private const val BACKUP_MIME_TYPE = "application/json"
 class SettingsActions(
     val viewModel: SettingsViewModel,
     val onOpenCushionLevels: () -> Unit,
+    val onOpenGuide: () -> Unit,
     val onExport: (LocalDate) -> Unit,
     val onImport: () -> Unit,
 )
@@ -227,7 +232,7 @@ private fun SettingsList(
                 title = stringResource(R.string.settings_cushion),
                 summary = stringResource(
                     R.string.settings_cushion_summary,
-                    money.format(settings.cushionCurrent),
+                    money.format(state.cushionFromEnvelopes ?: settings.cushionCurrent),
                     money.format(settings.cushionTarget),
                 ),
                 onClick = { onOpenDialog(SettingsDialogType.CUSHION) },
@@ -285,6 +290,22 @@ private fun SettingsList(
             )
         }
         item {
+            SettingsItem(
+                icon = Icons.Rounded.Language,
+                title = stringResource(R.string.settings_language),
+                summary = if (isAppLanguageSupported) {
+                    currentLanguageName()
+                } else {
+                    stringResource(R.string.settings_language_unsupported)
+                },
+                onClick = if (isAppLanguageSupported) {
+                    { onOpenDialog(SettingsDialogType.LANGUAGE) }
+                } else {
+                    null
+                },
+            )
+        }
+        item {
             SwitchItem(
                 icon = Icons.Rounded.Wallpaper,
                 title = stringResource(R.string.settings_dynamic_color),
@@ -324,6 +345,15 @@ private fun SettingsList(
         }
 
         item { SectionHeader(stringResource(R.string.settings_section_about)) }
+        item {
+            SettingsItem(
+                icon = Icons.Rounded.School,
+                title = stringResource(R.string.settings_guide),
+                summary = stringResource(R.string.settings_guide_summary),
+                onClick = actions.onOpenGuide,
+                showChevron = true,
+            )
+        }
         item {
             SettingsItem(
                 icon = Icons.Rounded.Info,
@@ -380,6 +410,7 @@ private fun SettingsDialogs(
         )
         SettingsDialogType.CUSHION -> CushionDialog(
             current = settings.cushionCurrent,
+            envelopeBalance = state.cushionFromEnvelopes,
             target = settings.cushionTarget,
             onConfirm = {
                 viewModel.setCushion(it)
@@ -410,6 +441,7 @@ private fun SettingsDialogs(
             },
             onDismiss = onDismiss,
         )
+        SettingsDialogType.LANGUAGE -> LanguageDialog(onDismiss = onDismiss)
         SettingsDialogType.IMPORT -> ConfirmDialog(
             title = stringResource(R.string.settings_import_confirm_title),
             text = stringResource(R.string.settings_import_confirm_text),

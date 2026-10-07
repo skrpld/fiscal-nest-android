@@ -14,6 +14,7 @@ import fiscalnest.core.DistributionResult
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.DateProvider
 import io.github.skrpld.fiscalnest.domain.engine.BudgetEngine
+import io.github.skrpld.fiscalnest.domain.envelope.effectiveCushionCurrent
 import io.github.skrpld.fiscalnest.domain.engine.ForecastOutcome
 import io.github.skrpld.fiscalnest.domain.engine.WhatIfOutcome
 import io.github.skrpld.fiscalnest.domain.form.FieldError
@@ -68,11 +69,12 @@ class WhatIfViewModel(
 
     init {
         viewModelScope.launch {
-            val settings = repository.data.first().settings
+            val data = repository.data.first()
+            val settings = data.settings
             if (draft.isEmpty) {
                 onDraftChange(
                     draft.copy(
-                        cushionCurrent = DecimalInput.formatAmount(settings.cushionCurrent),
+                        cushionCurrent = DecimalInput.formatAmount(data.effectiveCushionCurrent()),
                         cushionTarget = DecimalInput.formatAmount(settings.cushionTarget),
                     ),
                 )
@@ -97,7 +99,7 @@ class WhatIfViewModel(
                         income = DecimalInput.formatAmount(plan.totalIncome.max(BigDecimal.ZERO)),
                         mandatory = DecimalInput.formatAmount(plan.totalMandatory),
                         optional = DecimalInput.formatAmount(plan.totalOptional),
-                        cushionCurrent = DecimalInput.formatAmount(data.settings.cushionCurrent),
+                        cushionCurrent = DecimalInput.formatAmount(data.effectiveCushionCurrent()),
                         cushionTarget = DecimalInput.formatAmount(data.settings.cushionTarget),
                     ),
                 )

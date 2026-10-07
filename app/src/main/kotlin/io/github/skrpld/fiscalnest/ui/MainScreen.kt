@@ -20,10 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.rounded.Calculate
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.Mail
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -46,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.window.core.layout.WindowSizeClass
 import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.domain.model.EventKind
+import io.github.skrpld.fiscalnest.ui.envelopes.EnvelopesRoute
 import io.github.skrpld.fiscalnest.ui.events.EventsRoute
 import io.github.skrpld.fiscalnest.ui.overview.OverviewRoute
 import io.github.skrpld.fiscalnest.ui.settings.SettingsRoute
@@ -61,6 +64,7 @@ enum class TopLevelTab(
 ) {
     OVERVIEW(R.string.tab_overview, Icons.Rounded.Dashboard, Icons.Outlined.Dashboard),
     EVENTS(R.string.tab_events, Icons.Rounded.Event, Icons.Outlined.Event),
+    ENVELOPES(R.string.tab_envelopes, Icons.Rounded.Mail, Icons.Outlined.Mail),
     WHAT_IF(R.string.tab_what_if, Icons.Rounded.Calculate, Icons.Outlined.Calculate),
     SETTINGS(R.string.tab_settings, Icons.Rounded.Settings, Icons.Outlined.Settings),
 }
@@ -76,6 +80,9 @@ fun MainScreen(
     onOpenPeriod: (Int) -> Unit,
     onOpenSpendings: () -> Unit,
     onOpenCushionLevels: () -> Unit,
+    onOpenEnvelope: (String) -> Unit,
+    onAddEnvelope: () -> Unit,
+    onOpenGuide: () -> Unit,
 ) {
     var selectedTab by rememberSaveable { mutableStateOf(TopLevelTab.OVERVIEW) }
     val tabStates = rememberSaveableStateHolder()
@@ -112,8 +119,12 @@ fun MainScreen(
                             onOpenSpendings = onOpenSpendings,
                         )
                         TopLevelTab.EVENTS -> EventsRoute(onAddEvent = onAddEvent, onOpenEvent = onOpenEvent)
+                        TopLevelTab.ENVELOPES -> EnvelopesRoute(onOpenEnvelope = onOpenEnvelope, onAddEnvelope = onAddEnvelope)
                         TopLevelTab.WHAT_IF -> WhatIfRoute()
-                        TopLevelTab.SETTINGS -> SettingsRoute(onOpenCushionLevels = onOpenCushionLevels)
+                        TopLevelTab.SETTINGS -> SettingsRoute(
+                            onOpenCushionLevels = onOpenCushionLevels,
+                            onOpenGuide = onOpenGuide,
+                        )
                     }
                 }
             }

@@ -32,6 +32,9 @@ class DecimalInputTest {
             ".5|0.5",
             "007|7",
             "0|0",
+            "١٢٣٫٤|123.4",
+            "١٬٢٣٤|1234",
+            "۱۲|12",
         ],
     )
     fun `parses common notations`(text: String, expected: String) {

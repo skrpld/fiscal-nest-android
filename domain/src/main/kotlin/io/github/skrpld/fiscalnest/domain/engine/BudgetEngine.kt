@@ -11,6 +11,7 @@ import fiscalnest.core.DistributionResult
 import fiscalnest.core.ForecastInput
 import fiscalnest.core.ForecastResult
 import fiscalnest.core.WhatIfInput
+import io.github.skrpld.fiscalnest.domain.envelope.effectiveCushionCurrent
 import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.BudgetSettings
 import io.github.skrpld.fiscalnest.domain.model.Spending
@@ -85,7 +86,7 @@ object BudgetEngine {
                     alreadySpent = alreadySpent,
                     forecastPeriods = settings.forecastPeriods,
                     config = settings.toEngineConfig(),
-                    cushionState = CushionState(settings.cushionCurrent, settings.cushionTarget),
+                    cushionState = CushionState(data.effectiveCushionCurrent(), settings.cushionTarget),
                 ),
             )
             ForecastOutcome.Success(period, today, alreadySpent, results)

@@ -55,7 +55,7 @@ class MoneyFormatter(
         /** Codes offered in the currency picker, after the locale's own currency. */
         val COMMON_CURRENCIES: List<String> = listOf(
             "RUB", "USD", "EUR", "KZT", "BYN", "UAH", "UZS", "KGS", "AMD", "GEL", "AZN", "TRY",
-            "GBP", "CHF", "PLN", "CZK", "CNY", "JPY", "INR", "AED", "ILS", "CAD", "AUD",
+            "GBP", "CHF", "PLN", "CZK", "CNY", "JPY", "INR", "AED", "SAR", "EGP", "ILS", "BRL", "MXN", "CAD", "AUD",
         )
 
         /** The currency of [locale], or US dollars when the locale has no country. */

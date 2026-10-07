@@ -5,6 +5,7 @@
 
 package io.github.skrpld.fiscalnest.ui.common
 
+import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
@@ -48,12 +49,13 @@ inline fun <reified VM : ViewModel> appViewModel(
  */
 class DateTexts(locale: Locale) {
     private val medium = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
-    private val dayMonth = DateTimeFormatter.ofPattern("d MMM", locale)
+    // The best day-month order of the locale: `2 Oct`, `Oct 2`, `10月2日`.
+    private val dayMonth = DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "dMMM"), locale)
 
     /** `2 Oct 2026` / `2 окт. 2026 г.`. */
     fun date(date: LocalDate): String = medium.format(date)
 
-    /** `2 Oct` / `2 окт.`. */
+    /** `2 Oct` / `2 окт.` / `10月2日`. */
     fun dayMonth(date: LocalDate): String = dayMonth.format(date)
 
     /** `1 Oct – 31 Oct 2026`. */

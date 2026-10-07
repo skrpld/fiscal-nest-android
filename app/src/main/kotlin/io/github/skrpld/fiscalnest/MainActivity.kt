@@ -36,6 +36,7 @@ import io.github.skrpld.fiscalnest.ui.common.LocalAppContainer
 import io.github.skrpld.fiscalnest.ui.common.LocalDateTexts
 import io.github.skrpld.fiscalnest.ui.common.LocalMoneyFormatter
 import io.github.skrpld.fiscalnest.ui.common.LocalPercentFormatter
+import io.github.skrpld.fiscalnest.ui.onboarding.OnboardingRoute
 import io.github.skrpld.fiscalnest.ui.theme.FiscalNestTheme
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -48,16 +49,20 @@ import kotlinx.coroutines.flow.stateIn
 sealed interface MainUiState {
     data object Loading : MainUiState
 
+    /** @property onboardingCompleted `false` shows the getting started guide instead of the app */
     data class Ready(
         val appearance: AppearanceSettings,
         val currencyCode: String?,
         val moneyScale: Int,
+        val onboardingCompleted: Boolean,
     ) : MainUiState
 }
 
 class MainViewModel(repository: BudgetRepository) : ViewModel() {
     val uiState: StateFlow<MainUiState> = repository.data
-        .map { MainUiState.Ready(it.appearance, it.settings.currencyCode, it.settings.moneyScale) }
+        .map {
+            MainUiState.Ready(it.appearance, it.settings.currencyCode, it.settings.moneyScale, it.onboardingCompleted)
+        }
         .stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
 }
 
@@ -112,7 +117,7 @@ class MainActivity : ComponentActivity() {
             LocalDateTexts provides dateTexts,
         ) {
             FiscalNestTheme(darkTheme = darkTheme, dynamicColor = state.appearance.dynamicColor) {
-                FiscalNestApp()
+                if (state.onboardingCompleted) FiscalNestApp() else OnboardingRoute(isFirstLaunch = true, onFinish = {})
             }
         }
     }

@@ -32,6 +32,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
     override val idGenerator: IdGenerator = IdGenerator.Random
 
     override fun initialData(): AppData = AppData(
+        onboardingCompleted = false,
         settings = BudgetSettings(
             cushionLevels = BudgetSettings.defaultCushionLevels(
                 criticalName = appContext.getString(R.string.cushion_level_default_critical),
