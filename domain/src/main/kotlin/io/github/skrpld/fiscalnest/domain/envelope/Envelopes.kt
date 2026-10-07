@@ -163,6 +163,16 @@ object EnvelopeCalculator {
 }
 
 /**
+ * Total balance of the envelopes with the [EnvelopeRole.SPENDING] role, none counted below zero,
+ * or `null` when there are none.
+ */
+fun List<EnvelopeStatus>.spendingBalance(): BigDecimal? {
+    val spending = filter { it.envelope.role == EnvelopeRole.SPENDING }
+    if (spending.isEmpty()) return null
+    return spending.fold(BigDecimal.ZERO) { total, status -> total + status.balance.max(BigDecimal.ZERO) }
+}
+
+/**
  * The cushion balance the budget starts from: the cushion envelopes when there are any, otherwise
  * the balance entered in the settings.
  */

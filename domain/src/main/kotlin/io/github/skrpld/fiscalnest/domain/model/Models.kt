@@ -57,6 +57,9 @@ sealed interface Recurrence {
  * @property amount non-negative amount of each occurrence
  * @property startDate first possible occurrence, anchors the recurrence
  * @property endDate last possible occurrence, inclusive; `null` means open-ended
+ * @property envelopeId envelope an income arrives in or an expense is paid from, once the user
+ * confirms an occurrence; required by the editor, `null` only in data saved before envelopes
+ * were required
  */
 @Serializable
 data class BudgetEvent(
@@ -67,6 +70,7 @@ data class BudgetEvent(
     val recurrence: Recurrence,
     val startDate: LocalDate,
     val endDate: LocalDate? = null,
+    val envelopeId: String? = null,
 ) {
     /** `true` when no occurrence can happen on or after [date]. */
     fun hasEndedBefore(date: LocalDate): Boolean =
@@ -76,6 +80,10 @@ data class BudgetEvent(
 /**
  * Unscheduled spending logged by the user. Spending dated inside the current period, up to today,
  * is passed to the engine as `alreadySpent`.
+ *
+ * @property envelopeId envelope the money was taken from; the spending is mirrored by a withdrawal
+ * of that envelope, see [upsertSpending]. Required by the form, `null` only in data saved before
+ * envelopes were required.
  */
 @Serializable
 data class Spending(
@@ -83,6 +91,7 @@ data class Spending(
     val amount: BigDecimal,
     val date: LocalDate,
     val note: String = "",
+    val envelopeId: String? = null,
 )
 
 /**
@@ -257,9 +266,26 @@ enum class EnvelopeOperationType {
 }
 
 /**
+ * What caused an [EnvelopeOperation] besides a manual deposit or withdrawal.
+ */
+@Serializable
+sealed interface OperationSource {
+    /** Mirrors the [Spending] with [spendingId]. */
+    @Serializable
+    @SerialName("spending")
+    data class FromSpending(val spendingId: String) : OperationSource
+
+    /** The confirmed occurrence of the event with [eventId] on [date]. */
+    @Serializable
+    @SerialName("event")
+    data class FromEvent(val eventId: String, val date: LocalDate) : OperationSource
+}
+
+/**
  * Money put into or taken out of an envelope.
  *
  * @property amount positive amount of the operation
+ * @property source what caused the operation; `null` for a manual deposit or withdrawal
  */
 @Serializable
 data class EnvelopeOperation(
@@ -269,6 +295,30 @@ data class EnvelopeOperation(
     val amount: BigDecimal,
     val date: LocalDate,
     val note: String = "",
+    val source: OperationSource? = null,
+)
+
+/**
+ * The user's answer for one occurrence of a scheduled event.
+ */
+@Serializable
+enum class OccurrenceStatus {
+    /** It happened; an [EnvelopeOperation] with an [OperationSource.FromEvent] source moved the money. */
+    CONFIRMED,
+
+    /** It did not happen; no money moved. */
+    SKIPPED,
+}
+
+/**
+ * An occurrence of a scheduled event that the user has confirmed or skipped. Occurrences without
+ * one wait in the confirmation queue.
+ */
+@Serializable
+data class HandledOccurrence(
+    val eventId: String,
+    val date: LocalDate,
+    val status: OccurrenceStatus,
 )
 
 /**
@@ -277,6 +327,10 @@ data class EnvelopeOperation(
  * @property onboardingCompleted `false` until the getting started guide has been finished or
  * skipped. Defaults to `true` so that data saved before the guide existed does not show it; a
  * fresh installation starts with `false`.
+ * @property handledOccurrences event occurrences the user has confirmed or skipped
+ * @property queueStart first date whose event occurrences wait for confirmation; earlier ones are
+ * history from before the queue existed. `null` until the app first starts the queue, see
+ * [startQueue].
  */
 @Serializable
 data class AppData(
@@ -288,6 +342,8 @@ data class AppData(
     val envelopes: List<Envelope> = emptyList(),
     val envelopeOperations: List<EnvelopeOperation> = emptyList(),
     val onboardingCompleted: Boolean = true,
+    val handledOccurrences: List<HandledOccurrence> = emptyList(),
+    val queueStart: LocalDate? = null,
 ) {
     companion object {
         const val SCHEMA_VERSION: Int = 1

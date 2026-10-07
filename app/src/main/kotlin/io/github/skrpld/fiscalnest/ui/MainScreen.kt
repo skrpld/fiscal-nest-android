@@ -117,6 +117,7 @@ fun MainScreen(
                             onAddEvent = { onAddEvent(null) },
                             onOpenPeriod = onOpenPeriod,
                             onOpenSpendings = onOpenSpendings,
+                            onCreateEnvelope = onAddEnvelope,
                         )
                         TopLevelTab.EVENTS -> EventsRoute(onAddEvent = onAddEvent, onOpenEvent = onOpenEvent)
                         TopLevelTab.ENVELOPES -> EnvelopesRoute(onOpenEnvelope = onOpenEnvelope, onAddEnvelope = onAddEnvelope)

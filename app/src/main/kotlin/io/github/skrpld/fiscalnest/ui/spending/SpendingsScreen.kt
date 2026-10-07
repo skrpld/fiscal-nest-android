@@ -5,6 +5,7 @@
 
 package io.github.skrpld.fiscalnest.ui.spending
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,6 +46,8 @@ import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.DateProvider
 import io.github.skrpld.fiscalnest.domain.data.IdGenerator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeCalculator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeStatus
 import io.github.skrpld.fiscalnest.domain.form.SpendingDraft
 import io.github.skrpld.fiscalnest.domain.form.SpendingField
 import io.github.skrpld.fiscalnest.domain.form.Validation
@@ -77,11 +80,13 @@ sealed interface SpendingsUiState {
     /**
      * @property currentPeriod period whose spending counts in today's budget
      * @property spendings all logged spending, newest first
+     * @property envelopes every envelope, spending can be taken from any of them
      */
     data class Ready(
         val today: LocalDate,
         val currentPeriod: DateRange,
         val spendings: List<Spending>,
+        val envelopes: List<EnvelopeStatus> = emptyList(),
     ) : SpendingsUiState
 }
 
@@ -90,7 +95,7 @@ class SpendingsViewModel(
     private val dateProvider: DateProvider,
     idGenerator: IdGenerator,
 ) : ViewModel() {
-    private val recorder = SpendingRecorder(repository, idGenerator)
+    private val recorder = SpendingRecorder(repository, idGenerator, viewModelScope)
 
     val uiState: StateFlow<SpendingsUiState> = repository.data
         .map { data ->
@@ -99,12 +104,14 @@ class SpendingsViewModel(
                 today = today,
                 currentPeriod = PeriodResolver.periodContaining(data.settings.period, today),
                 spendings = data.spendings.sortedWith(compareByDescending<Spending> { it.date }),
+                envelopes = EnvelopeCalculator.summary(data, today).statuses,
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SpendingsUiState.Loading)
 
-    fun add(draft: SpendingDraft): Validation<Spending, SpendingField> =
-        recorder.record(draft, dateProvider.today(), viewModelScope)
+    /** Saves new spending, or changes [existing] spending. */
+    fun save(draft: SpendingDraft, existing: Spending? = null): Validation<Spending, SpendingField> =
+        recorder.record(draft, dateProvider.today(), existing)
 
     fun delete(spending: Spending) {
         viewModelScope.launch { repository.update { it.deleteSpending(spending.id) } }
@@ -119,13 +126,15 @@ class SpendingsViewModel(
 @Composable
 fun SpendingsRoute(
     onBack: () -> Unit,
+    onCreateEnvelope: () -> Unit,
     viewModel: SpendingsViewModel = appViewModel { SpendingsViewModel(it.repository, it.dateProvider, it.idGenerator) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     SpendingsScreen(
         state = state,
         onBack = onBack,
-        onAdd = viewModel::add,
+        onSave = viewModel::save,
+        onCreateEnvelope = onCreateEnvelope,
         onDelete = viewModel::delete,
         onRestore = viewModel::restore,
     )
@@ -135,7 +144,8 @@ fun SpendingsRoute(
 fun SpendingsScreen(
     state: SpendingsUiState,
     onBack: () -> Unit,
-    onAdd: (SpendingDraft) -> Validation<Spending, SpendingField>,
+    onSave: (SpendingDraft, Spending?) -> Validation<Spending, SpendingField>,
+    onCreateEnvelope: () -> Unit,
     onDelete: (Spending) -> Unit,
     onRestore: (Spending) -> Unit,
 ) {
@@ -143,6 +153,7 @@ fun SpendingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showSheet by rememberSaveable { mutableStateOf(false) }
+    var editingId by rememberSaveable { mutableStateOf<String?>(null) }
     val deletedMessage = stringResource(R.string.spending_deleted)
     val undoLabel = stringResource(R.string.action_undo)
 
@@ -181,6 +192,7 @@ fun SpendingsScreen(
                 SpendingList(
                     state = state,
                     padding = padding,
+                    onEdit = { editingId = it.id },
                     onDelete = { spending ->
                         onDelete(spending)
                         scope.launch {
@@ -197,7 +209,31 @@ fun SpendingsScreen(
         }
     }
     if (showSheet && state is SpendingsUiState.Ready) {
-        AddSpendingSheet(today = state.today, onSubmit = onAdd, onDismiss = { showSheet = false })
+        SpendingSheet(
+            today = state.today,
+            envelopes = state.envelopes,
+            onSubmit = { draft -> onSave(draft, null) },
+            onCreateEnvelope = {
+                showSheet = false
+                onCreateEnvelope()
+            },
+            onDismiss = { showSheet = false },
+        )
+    }
+    val ready = state as? SpendingsUiState.Ready
+    val editing = ready?.spendings?.firstOrNull { it.id == editingId }
+    if (ready != null && editing != null) {
+        SpendingSheet(
+            today = ready.today,
+            envelopes = ready.envelopes,
+            onSubmit = { draft -> onSave(draft, editing) },
+            onCreateEnvelope = {
+                editingId = null
+                onCreateEnvelope()
+            },
+            onDismiss = { editingId = null },
+            existing = editing,
+        )
     }
 }
 
@@ -205,12 +241,15 @@ fun SpendingsScreen(
 private fun SpendingList(
     state: SpendingsUiState.Ready,
     padding: androidx.compose.foundation.layout.PaddingValues,
+    onEdit: (Spending) -> Unit,
     onDelete: (Spending) -> Unit,
 ) {
     val money = LocalMoneyFormatter.current
     val dates = LocalDateTexts.current
     val noNote = stringResource(R.string.spending_no_note)
     val notCounted = stringResource(R.string.spending_not_in_current_period)
+    val noEnvelope = stringResource(R.string.spending_without_envelope)
+    val envelopeNames = state.envelopes.associate { it.envelope.id to it.envelope.name }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = padding.withContentPadding(horizontal = 0.dp, extraBottom = FabClearance),
@@ -220,7 +259,12 @@ private fun SpendingList(
             ListItem(
                 headlineContent = { Text(spending.note.ifBlank { noNote }) },
                 supportingContent = {
-                    Text(if (inCurrentPeriod) dates.date(spending.date) else "${dates.date(spending.date)} · $notCounted")
+                    val parts = listOfNotNull(
+                        dates.date(spending.date),
+                        spending.envelopeId?.let(envelopeNames::get) ?: noEnvelope,
+                        notCounted.takeUnless { inCurrentPeriod },
+                    )
+                    Text(parts.joinToString(" · "))
                 },
                 trailingContent = {
                     androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -233,7 +277,9 @@ private fun SpendingList(
                         }
                     }
                 },
-                modifier = Modifier.animateItem(),
+                modifier = Modifier
+                    .animateItem()
+                    .clickable { onEdit(spending) },
             )
         }
     }

@@ -371,4 +371,30 @@
         <item quantity="many">Tous les %1$d jours depuis le %2$s</item>
         <item quantity="other">Tous les %1$d jours depuis le %2$s</item>
     </plurals>
+    <string name="spending_paid_from">Payé depuis</string>
+    <string name="spending_envelope_available">Disponible dans l’enveloppe : %1$s</string>
+    <string name="envelope_picker_none">L’argent est toujours rangé dans des enveloppes. Créez-en une d’abord.</string>
+    <string name="spending_sheet_edit_title">Modifier la dépense</string>
+    <string name="spending_without_envelope">Sans enveloppe</string>
+    <string name="overview_in_envelopes">Dans les enveloppes : %1$s</string>
+    <string name="overview_in_envelopes_with_spending">Dans les enveloppes : %1$s, pour les dépenses : %2$s</string>
+    <string name="queue_title">En attente de confirmation</string>
+    <string name="queue_no_envelope">Enveloppe non choisie</string>
+    <string name="queue_skip">N’a pas eu lieu</string>
+    <string name="queue_confirm_income">Reçu</string>
+    <string name="queue_confirm_expense">Payé</string>
+    <string name="queue_sheet_income_title">Revenu : %1$s</string>
+    <string name="queue_sheet_expense_title">Paiement : %1$s</string>
+    <string name="queue_sheet_hint">Prévu le %1$s. Modifiez le montant s’il était différent.</string>
+    <string name="queue_sheet_amount">Montant réel</string>
+    <string name="queue_sheet_income_envelope">Arrive dans</string>
+    <string name="queue_confirmed">Confirmé</string>
+    <string name="queue_skipped">Marqué comme n’ayant pas eu lieu</string>
+    <string name="event_field_envelope_income">Arrive dans l’enveloppe</string>
+    <string name="event_field_envelope_expense">Payé depuis l’enveloppe</string>
+    <string name="onboarding_envelope_name">Carte principale</string>
+    <plurals name="queue_hint">
+        <item quantity="one">%d opération est due. L’argent ne bouge dans les enveloppes qu’une fois confirmée.</item>
+        <item quantity="other">%d opérations sont dues. L’argent ne bouge dans les enveloppes qu’une fois confirmées.</item>
+    </plurals>
 </resources>

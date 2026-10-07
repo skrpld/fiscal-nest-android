@@ -365,4 +365,30 @@
         <item quantity="one">Alle %1$d Tag ab %2$s</item>
         <item quantity="other">Alle %1$d Tage ab %2$s</item>
     </plurals>
+    <string name="spending_paid_from">Bezahlt von</string>
+    <string name="spending_envelope_available">Im Umschlag verfügbar: %1$s</string>
+    <string name="envelope_picker_none">Geld liegt immer in Umschlägen. Lege zuerst einen an.</string>
+    <string name="spending_sheet_edit_title">Ausgabe bearbeiten</string>
+    <string name="spending_without_envelope">Kein Umschlag</string>
+    <string name="overview_in_envelopes">In Umschlägen: %1$s</string>
+    <string name="overview_in_envelopes_with_spending">In Umschlägen: %1$s, für Ausgaben: %2$s</string>
+    <string name="queue_title">Wartet auf Bestätigung</string>
+    <string name="queue_no_envelope">Kein Umschlag gewählt</string>
+    <string name="queue_skip">Nicht passiert</string>
+    <string name="queue_confirm_income">Erhalten</string>
+    <string name="queue_confirm_expense">Bezahlt</string>
+    <string name="queue_sheet_income_title">Einnahme: %1$s</string>
+    <string name="queue_sheet_expense_title">Zahlung: %1$s</string>
+    <string name="queue_sheet_hint">Geplant für %1$s. Ändere den Betrag, falls er abwich.</string>
+    <string name="queue_sheet_amount">Tatsächlicher Betrag</string>
+    <string name="queue_sheet_income_envelope">Geht ein in</string>
+    <string name="queue_confirmed">Bestätigt</string>
+    <string name="queue_skipped">Als nicht passiert markiert</string>
+    <string name="event_field_envelope_income">Geht ein in Umschlag</string>
+    <string name="event_field_envelope_expense">Bezahlt aus Umschlag</string>
+    <string name="onboarding_envelope_name">Hauptkarte</string>
+    <plurals name="queue_hint">
+        <item quantity="one">%d Buchung ist fällig. Geld bewegt sich in den Umschlägen erst, wenn du sie bestätigst.</item>
+        <item quantity="other">%d Buchungen sind fällig. Geld bewegt sich in den Umschlägen erst, wenn du sie bestätigst.</item>
+    </plurals>
 </resources>

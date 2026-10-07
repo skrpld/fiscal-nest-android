@@ -17,6 +17,9 @@ import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
 import io.github.skrpld.fiscalnest.domain.model.EnvelopePolicy
 import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
+import io.github.skrpld.fiscalnest.domain.model.HandledOccurrence
+import io.github.skrpld.fiscalnest.domain.model.OccurrenceStatus
+import io.github.skrpld.fiscalnest.domain.model.OperationSource
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
 import io.github.skrpld.fiscalnest.domain.model.ThemeMode
@@ -41,6 +44,7 @@ class AppDataCodecTest {
                     Recurrence.EveryNDays(14),
                     date(2026, 8, 2),
                     date(2026, 12, 31),
+                    envelopeId = "cafes",
                 ),
             ),
             appearance = AppearanceSettings(themeMode = ThemeMode.DARK, dynamicColor = false),
@@ -53,7 +57,31 @@ class AppDataCodecTest {
             envelopeOperations = listOf(
                 EnvelopeOperation("op1", "cafes", EnvelopeOperationType.DEPOSIT, dec("10000"), date(2026, 8, 1), "Start"),
                 EnvelopeOperation("op2", "cafes", EnvelopeOperationType.WITHDRAWAL, dec("1200.50"), date(2026, 8, 3)),
+                EnvelopeOperation(
+                    "op3",
+                    "cafes",
+                    EnvelopeOperationType.WITHDRAWAL,
+                    dec("700"),
+                    date(2026, 8, 2),
+                    "Gym",
+                    OperationSource.FromEvent("gym", date(2026, 8, 2)),
+                ),
+                EnvelopeOperation(
+                    "op4",
+                    "cafes",
+                    EnvelopeOperationType.WITHDRAWAL,
+                    dec("2000"),
+                    date(2026, 8, 3),
+                    "Groceries",
+                    OperationSource.FromSpending("s1"),
+                ),
             ),
+            spendings = readmeData.spendings.map { if (it.id == "s1") it.copy(envelopeId = "cafes") else it },
+            handledOccurrences = listOf(
+                HandledOccurrence("gym", date(2026, 8, 2), OccurrenceStatus.CONFIRMED),
+                HandledOccurrence("salary", date(2026, 8, 1), OccurrenceStatus.SKIPPED),
+            ),
+            queueStart = date(2026, 8, 1),
             onboardingCompleted = false,
         )
         .updateSettings {

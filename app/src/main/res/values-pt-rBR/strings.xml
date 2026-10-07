@@ -371,4 +371,30 @@
         <item quantity="many">A cada %1$d dias desde %2$s</item>
         <item quantity="other">A cada %1$d dias desde %2$s</item>
     </plurals>
+    <string name="spending_paid_from">Pago com</string>
+    <string name="spending_envelope_available">Disponível no envelope: %1$s</string>
+    <string name="envelope_picker_none">O dinheiro fica sempre em envelopes. Crie um primeiro.</string>
+    <string name="spending_sheet_edit_title">Editar gasto</string>
+    <string name="spending_without_envelope">Sem envelope</string>
+    <string name="overview_in_envelopes">Nos envelopes: %1$s</string>
+    <string name="overview_in_envelopes_with_spending">Nos envelopes: %1$s, para gastos: %2$s</string>
+    <string name="queue_title">Aguardando confirmação</string>
+    <string name="queue_no_envelope">Envelope não escolhido</string>
+    <string name="queue_skip">Não aconteceu</string>
+    <string name="queue_confirm_income">Recebido</string>
+    <string name="queue_confirm_expense">Pago</string>
+    <string name="queue_sheet_income_title">Receita: %1$s</string>
+    <string name="queue_sheet_expense_title">Pagamento: %1$s</string>
+    <string name="queue_sheet_hint">Previsto para %1$s. Altere o valor se foi diferente.</string>
+    <string name="queue_sheet_amount">Valor real</string>
+    <string name="queue_sheet_income_envelope">Entra em</string>
+    <string name="queue_confirmed">Confirmado</string>
+    <string name="queue_skipped">Marcado como não aconteceu</string>
+    <string name="event_field_envelope_income">Entra no envelope</string>
+    <string name="event_field_envelope_expense">Pago com o envelope</string>
+    <string name="onboarding_envelope_name">Cartão principal</string>
+    <plurals name="queue_hint">
+        <item quantity="one">%d operação venceu. O dinheiro nos envelopes só muda quando você a confirma.</item>
+        <item quantity="other">%d operações venceram. O dinheiro nos envelopes só muda quando você as confirma.</item>
+    </plurals>
 </resources>

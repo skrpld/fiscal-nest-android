@@ -35,6 +35,31 @@ class AppDataOperationsTest {
     }
 
     @Test
+    fun `spending from an envelope is mirrored by a withdrawal`() {
+        val card = Envelope(id = "card", name = "Card", role = EnvelopeRole.SPENDING)
+        val base = AppData().upsertEnvelope(card)
+        val spending = Spending("s", dec("40"), date(2026, 8, 8), "Lunch", envelopeId = "card")
+
+        val spent = base.upsertSpending(spending)
+        val operation = spent.envelopeOperations.single()
+        assertEquals(EnvelopeOperationType.WITHDRAWAL, operation.type)
+        assertEquals(dec("40"), operation.amount)
+        assertEquals("card", operation.envelopeId)
+
+        val edited = spent.upsertSpending(spending.copy(amount = dec("50")))
+        assertEquals(dec("50"), edited.envelopeOperations.single().amount)
+
+        assertTrue(edited.deleteSpending("s").envelopeOperations.isEmpty())
+        assertTrue(edited.deleteEnvelope("card").spendings.single().envelopeId == null)
+
+        val mirror = edited.envelopeOperations.single()
+        assertEquals(OperationSource.FromSpending("s"), mirror.source)
+        val withoutMirror = edited.deleteEnvelopeOperation(mirror.id)
+        assertTrue(withoutMirror.spendings.isEmpty())
+        assertEquals(edited, withoutMirror.upsertEnvelopeOperation(mirror))
+    }
+
+    @Test
     fun `sorts cushion levels by threshold`() {
         val levels = BudgetSettings.defaultCushionLevels().reversed()
         val sorted = BudgetSettings().withCushionLevels(levels).cushionLevels

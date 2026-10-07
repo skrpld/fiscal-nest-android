@@ -37,33 +37,55 @@ import androidx.compose.ui.unit.dp
 import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.IdGenerator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeCalculator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeStatus
 import io.github.skrpld.fiscalnest.domain.form.FieldError
 import io.github.skrpld.fiscalnest.domain.form.SpendingDraft
 import io.github.skrpld.fiscalnest.domain.form.SpendingField
 import io.github.skrpld.fiscalnest.domain.form.Validation
+import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.Spending
+import io.github.skrpld.fiscalnest.domain.model.deleteSpending
 import io.github.skrpld.fiscalnest.domain.model.upsertSpending
 import io.github.skrpld.fiscalnest.ui.common.DateField
 import io.github.skrpld.fiscalnest.ui.common.FormTextField
 import io.github.skrpld.fiscalnest.ui.common.MoneyField
+import io.github.skrpld.fiscalnest.ui.envelopes.EnvelopePicker
+import io.github.skrpld.fiscalnest.ui.envelopes.defaultEnvelopeId
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import java.time.LocalDate
 
 /**
- * Validates and stores spending entered in [AddSpendingSheet].
+ * Validates and stores spending entered in [SpendingSheet]. Spending is always taken from an
+ * envelope and must fit what the envelope allows.
+ *
+ * @param scope scope of the owning view model; saves run in it
  */
 class SpendingRecorder(
     private val repository: BudgetRepository,
     private val idGenerator: IdGenerator,
+    private val scope: CoroutineScope,
 ) {
+    // Eager, so that record() always checks the envelope against the stored operations.
+    private val data: StateFlow<AppData?> = repository.data.stateIn(scope, SharingStarted.Eagerly, null)
+
     /**
-     * Saves the spending of [draft] in [scope] when it is valid.
+     * Saves the spending of [draft] when it is valid.
      *
+     * @param existing spending being edited; its own withdrawal does not count against the envelope
      * @return the validation result, so the form can show field errors
      */
-    fun record(draft: SpendingDraft, today: LocalDate, scope: CoroutineScope): Validation<Spending, SpendingField> {
-        val result = draft.validate(idGenerator.newId(), today)
+    fun record(draft: SpendingDraft, today: LocalDate, existing: Spending? = null): Validation<Spending, SpendingField> {
+        val current = data.value?.let { if (existing == null) it else it.deleteSpending(existing.id) }
+        val available = draft.envelopeId
+            ?.let { id -> current?.let { EnvelopeCalculator.status(it, id, draft.date)?.available } }
+            ?: BigDecimal.ZERO
+        val result = draft.validate(existing?.id ?: idGenerator.newId(), today, available)
         if (result is Validation.Valid) {
             scope.launch { repository.update { it.upsertSpending(result.value) } }
         }
@@ -72,21 +94,30 @@ class SpendingRecorder(
 }
 
 /**
- * Bottom sheet for logging unscheduled spending.
+ * Bottom sheet for logging unscheduled spending, or for editing [existing] spending.
  *
+ * @param envelopes envelopes the spending can be taken from
  * @param onSubmit stores the spending and returns the validation result
+ * @param onCreateEnvelope opens the envelope editor; offered while there is no envelope
  */
 @Composable
-fun AddSpendingSheet(
+fun SpendingSheet(
     today: LocalDate,
+    envelopes: List<EnvelopeStatus>,
     onSubmit: (SpendingDraft) -> Validation<Spending, SpendingField>,
+    onCreateEnvelope: () -> Unit,
     onDismiss: () -> Unit,
+    existing: Spending? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
-    var amount by rememberSaveable { mutableStateOf("") }
-    var note by rememberSaveable { mutableStateOf("") }
-    var dateEpochDay by rememberSaveable { mutableStateOf(today.toEpochDay()) }
+    val initial = existing?.let(SpendingDraft::from)
+    var amount by rememberSaveable { mutableStateOf(initial?.amount.orEmpty()) }
+    var note by rememberSaveable { mutableStateOf(initial?.note.orEmpty()) }
+    var dateEpochDay by rememberSaveable { mutableStateOf((initial?.date ?: today).toEpochDay()) }
+    var envelopeId by rememberSaveable {
+        mutableStateOf(if (existing == null) envelopes.defaultEnvelopeId() else initial?.envelopeId)
+    }
     var errors by remember { mutableStateOf<Map<SpendingField, FieldError>>(emptyMap()) }
     val focusRequester = remember { FocusRequester() }
 
@@ -96,7 +127,7 @@ fun AddSpendingSheet(
         }
     }
     val submit: () -> Unit = {
-        when (val result = onSubmit(SpendingDraft(amount, note, LocalDate.ofEpochDay(dateEpochDay)))) {
+        when (val result = onSubmit(SpendingDraft(amount, note, LocalDate.ofEpochDay(dateEpochDay), envelopeId))) {
             is Validation.Valid -> close()
             is Validation.Invalid -> errors = result.errors
         }
@@ -111,7 +142,10 @@ fun AddSpendingSheet(
                 .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.spending_sheet_title), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = stringResource(if (existing == null) R.string.spending_sheet_title else R.string.spending_sheet_edit_title),
+                style = MaterialTheme.typography.headlineSmall,
+            )
             Text(
                 text = stringResource(R.string.spending_sheet_hint),
                 style = MaterialTheme.typography.bodyMedium,
@@ -127,6 +161,17 @@ fun AddSpendingSheet(
                 modifier = Modifier.focusRequester(focusRequester),
                 error = errors[SpendingField.AMOUNT],
             )
+            EnvelopePicker(
+                envelopes = envelopes,
+                selectedId = envelopeId,
+                onSelect = {
+                    envelopeId = it
+                    errors = errors - SpendingField.ENVELOPE - SpendingField.AMOUNT
+                },
+                label = stringResource(R.string.spending_paid_from),
+                error = errors[SpendingField.ENVELOPE],
+                onCreateEnvelope = onCreateEnvelope,
+            )
             FormTextField(
                 value = note,
                 onValueChange = {
@@ -141,7 +186,7 @@ fun AddSpendingSheet(
                 date = LocalDate.ofEpochDay(dateEpochDay),
                 onDateChange = {
                     dateEpochDay = it.toEpochDay()
-                    errors = errors - SpendingField.DATE
+                    errors = errors - SpendingField.DATE - SpendingField.AMOUNT
                 },
                 label = stringResource(R.string.field_date),
                 error = errors[SpendingField.DATE],
@@ -152,11 +197,11 @@ fun AddSpendingSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             ) {
                 TextButton(onClick = close) { Text(stringResource(R.string.action_cancel)) }
-                Button(onClick = submit) { Text(stringResource(R.string.action_save)) }
+                Button(onClick = submit, enabled = envelopes.isNotEmpty()) { Text(stringResource(R.string.action_save)) }
             }
         }
         LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+            if (envelopes.isNotEmpty()) focusRequester.requestFocus()
         }
     }
 }

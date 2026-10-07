@@ -365,4 +365,30 @@
         <item quantity="one">%2$s से हर %1$d दिन</item>
         <item quantity="other">%2$s से हर %1$d दिन</item>
     </plurals>
+    <string name="spending_paid_from">भुगतान किया गया</string>
+    <string name="spending_envelope_available">लिफ़ाफ़े में उपलब्ध: %1$s</string>
+    <string name="envelope_picker_none">पैसा हमेशा लिफ़ाफ़ों में रहता है। पहले एक लिफ़ाफ़ा बनाएँ।</string>
+    <string name="spending_sheet_edit_title">खर्च बदलें</string>
+    <string name="spending_without_envelope">कोई लिफ़ाफ़ा नहीं</string>
+    <string name="overview_in_envelopes">लिफ़ाफ़ों में: %1$s</string>
+    <string name="overview_in_envelopes_with_spending">लिफ़ाफ़ों में: %1$s, खर्च के लिए: %2$s</string>
+    <string name="queue_title">पुष्टि की प्रतीक्षा</string>
+    <string name="queue_no_envelope">लिफ़ाफ़ा नहीं चुना गया</string>
+    <string name="queue_skip">नहीं हुआ</string>
+    <string name="queue_confirm_income">मिल गया</string>
+    <string name="queue_confirm_expense">भुगतान हो गया</string>
+    <string name="queue_sheet_income_title">आय: %1$s</string>
+    <string name="queue_sheet_expense_title">भुगतान: %1$s</string>
+    <string name="queue_sheet_hint">%1$s के लिए नियोजित। राशि अलग थी तो बदलें।</string>
+    <string name="queue_sheet_amount">असल राशि</string>
+    <string name="queue_sheet_income_envelope">जमा होगा</string>
+    <string name="queue_confirmed">पुष्टि हो गई</string>
+    <string name="queue_skipped">नहीं हुआ के रूप में चिह्नित</string>
+    <string name="event_field_envelope_income">जमा होने वाला लिफ़ाफ़ा</string>
+    <string name="event_field_envelope_expense">भुगतान वाला लिफ़ाफ़ा</string>
+    <string name="onboarding_envelope_name">मुख्य कार्ड</string>
+    <plurals name="queue_hint">
+        <item quantity="one">%d लेन-देन देय है। पुष्टि करने पर ही लिफ़ाफ़ों में पैसा बदलेगा।</item>
+        <item quantity="other">%d लेन-देन देय हैं। पुष्टि करने पर ही लिफ़ाफ़ों में पैसा बदलेगा।</item>
+    </plurals>
 </resources>
