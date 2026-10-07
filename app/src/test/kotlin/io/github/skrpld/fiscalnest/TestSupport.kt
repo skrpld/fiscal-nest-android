@@ -11,6 +11,10 @@ import io.github.skrpld.fiscalnest.domain.data.IdGenerator
 import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.BudgetEvent
 import io.github.skrpld.fiscalnest.domain.model.BudgetSettings
+import io.github.skrpld.fiscalnest.domain.model.Envelope
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperation
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeOperationType
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +59,7 @@ val Salary = BudgetEvent(
     amount = BigDecimal("50000"),
     recurrence = Recurrence.EveryNMonths(months = 1, dayOfMonth = 1),
     startDate = LocalDate.of(2026, 1, 1),
+    envelopeId = "card",
 )
 
 val Rent = BudgetEvent(
@@ -64,11 +69,22 @@ val Rent = BudgetEvent(
     amount = BigDecimal("20000"),
     recurrence = Recurrence.EveryNMonths(months = 1, dayOfMonth = 5),
     startDate = LocalDate.of(2026, 1, 5),
+    envelopeId = "card",
 )
 
-/** The engine README example: salary on the 1st, rent on the 5th, cushion 5 000 of 20 000. */
+/** The card both sample events go through, with 30 000 on it. */
+val Card = Envelope(id = "card", name = "Card", role = EnvelopeRole.SPENDING)
+
+/**
+ * The engine README example: salary on the 1st, rent on the 5th, cushion 5 000 of 20 000. Both
+ * events go through [Card].
+ */
 fun sampleData(): AppData = AppData(
     events = listOf(Salary, Rent),
+    envelopes = listOf(Card),
+    envelopeOperations = listOf(
+        EnvelopeOperation("opening", "card", EnvelopeOperationType.DEPOSIT, BigDecimal("30000"), LocalDate.of(2026, 7, 31)),
+    ),
     settings = BudgetSettings(
         forecastPeriods = 3,
         cushionCurrent = BigDecimal("5000"),

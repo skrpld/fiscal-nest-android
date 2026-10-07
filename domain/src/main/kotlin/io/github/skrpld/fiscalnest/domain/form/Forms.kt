@@ -28,13 +28,14 @@ import java.time.LocalDate
 enum class RecurrenceType { ONCE, DAYS, MONTHS }
 
 /** Fields of the event editor. */
-enum class EventField { NAME, AMOUNT, INTERVAL, DAY_OF_MONTH, END_DATE }
+enum class EventField { NAME, AMOUNT, ENVELOPE, INTERVAL, DAY_OF_MONTH, END_DATE }
 
 /**
  * Text state of the event editor.
  *
  * @property interval step in days or months, depending on [recurrenceType]
  * @property endDate last possible occurrence; ignored for one-time events
+ * @property envelopeId envelope the money arrives in or is paid from; required
  */
 data class EventDraft(
     val name: String,
@@ -45,6 +46,7 @@ data class EventDraft(
     val dayOfMonth: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
+    val envelopeId: String? = null,
 ) {
     /** Builds the event with [id], or reports every invalid field. */
     fun validate(id: String): Validation<BudgetEvent, EventField> {
@@ -55,6 +57,7 @@ data class EventDraft(
             trimmedName.length > Limits.MAX_NAME_LENGTH -> errors.add(EventField.NAME, FieldError.TOO_LONG)
         }
         val parsedAmount = positiveAmount(amount, EventField.AMOUNT, errors)
+        if (envelopeId == null) errors.add(EventField.ENVELOPE, FieldError.REQUIRED)
         val step = when (recurrenceType) {
             RecurrenceType.ONCE -> null
             RecurrenceType.DAYS -> intInRange(interval, 1..Limits.MAX_RECURRENCE_DAYS, EventField.INTERVAL, errors)
@@ -80,13 +83,18 @@ data class EventDraft(
                 },
                 startDate = startDate,
                 endDate = effectiveEnd,
+                envelopeId = envelopeId,
             )
         }
     }
 
     companion object {
-        /** An empty monthly event starting [today]. */
-        fun new(today: LocalDate, kind: EventKind = EventKind.MANDATORY_EXPENSE): EventDraft = EventDraft(
+        /** An empty monthly event starting [today], paid through the envelope with [envelopeId]. */
+        fun new(
+            today: LocalDate,
+            kind: EventKind = EventKind.MANDATORY_EXPENSE,
+            envelopeId: String? = null,
+        ): EventDraft = EventDraft(
             name = "",
             kind = kind,
             amount = "",
@@ -95,6 +103,7 @@ data class EventDraft(
             dayOfMonth = today.dayOfMonth.toString(),
             startDate = today,
             endDate = null,
+            envelopeId = envelopeId,
         )
 
         /** The editor state of an existing [event]. */
@@ -120,13 +129,14 @@ data class EventDraft(
                 },
                 startDate = event.startDate,
                 endDate = event.endDate,
+                envelopeId = event.envelopeId,
             )
         }
     }
 }
 
 /** Fields of the spending form. */
-enum class SpendingField { AMOUNT, NOTE, DATE }
+enum class SpendingField { AMOUNT, ENVELOPE, NOTE, DATE }
 
 /**
  * Text state of the spending form.
@@ -135,15 +145,40 @@ data class SpendingDraft(
     val amount: String = "",
     val note: String = "",
     val date: LocalDate,
+    val envelopeId: String? = null,
 ) {
-    /** Builds the spending with [id]; spending cannot be dated after [today]. */
-    fun validate(id: String, today: LocalDate): Validation<Spending, SpendingField> {
+    /**
+     * Builds the spending with [id]. Spending is always taken from an envelope, cannot exceed
+     * [available] and cannot be dated after [today].
+     *
+     * @param available what the chosen envelope allows to withdraw on [date]
+     */
+    fun validate(
+        id: String,
+        today: LocalDate,
+        available: BigDecimal = BigDecimal.ZERO,
+    ): Validation<Spending, SpendingField> {
         val errors = ErrorCollector<SpendingField>()
         val parsedAmount = positiveAmount(amount, SpendingField.AMOUNT, errors)
+        if (envelopeId == null) {
+            errors.add(SpendingField.ENVELOPE, FieldError.REQUIRED)
+        } else if (parsedAmount != null && parsedAmount > available) {
+            errors.add(SpendingField.AMOUNT, FieldError.EXCEEDS_AVAILABLE)
+        }
         val trimmedNote = note.trim()
         if (trimmedNote.length > Limits.MAX_NOTE_LENGTH) errors.add(SpendingField.NOTE, FieldError.TOO_LONG)
         if (date > today) errors.add(SpendingField.DATE, FieldError.IN_THE_FUTURE)
-        return errors.result { Spending(id = id, amount = parsedAmount!!, date = date, note = trimmedNote) }
+        return errors.result { Spending(id = id, amount = parsedAmount!!, date = date, note = trimmedNote, envelopeId = envelopeId) }
+    }
+
+    companion object {
+        /** The form state of an existing [spending]. */
+        fun from(spending: Spending): SpendingDraft = SpendingDraft(
+            amount = DecimalInput.formatAmount(spending.amount),
+            note = spending.note,
+            date = spending.date,
+            envelopeId = spending.envelopeId,
+        )
     }
 }
 
@@ -545,4 +580,42 @@ internal fun <F> intInRange(text: String, range: IntRange, field: F, errors: Err
         return null
     }
     return value
+}
+
+/** Fields of the form that confirms an event occurrence. */
+enum class OccurrenceField { AMOUNT, ENVELOPE }
+
+/**
+ * A confirmed occurrence: how much actually moved, and through which envelope.
+ */
+data class OccurrenceValues(val envelopeId: String, val amount: BigDecimal)
+
+/**
+ * Text state of the form that confirms an event occurrence. The amount may differ from the
+ * planned one, for example when a bill came out higher.
+ */
+data class OccurrenceDraft(
+    val amount: String,
+    val envelopeId: String?,
+) {
+    /**
+     * @param isIncome an income adds money; an expense cannot exceed [available]
+     * @param available what the chosen envelope allows to withdraw on the occurrence date
+     */
+    fun validate(isIncome: Boolean, available: BigDecimal): Validation<OccurrenceValues, OccurrenceField> {
+        val errors = ErrorCollector<OccurrenceField>()
+        val parsedAmount = positiveAmount(amount, OccurrenceField.AMOUNT, errors)
+        if (envelopeId == null) {
+            errors.add(OccurrenceField.ENVELOPE, FieldError.REQUIRED)
+        } else if (!isIncome && parsedAmount != null && parsedAmount > available) {
+            errors.add(OccurrenceField.AMOUNT, FieldError.EXCEEDS_AVAILABLE)
+        }
+        return errors.result { OccurrenceValues(envelopeId!!, parsedAmount!!) }
+    }
+
+    companion object {
+        /** The planned amount of [event], through its envelope. */
+        fun from(event: BudgetEvent): OccurrenceDraft =
+            OccurrenceDraft(amount = DecimalInput.formatAmount(event.amount), envelopeId = event.envelopeId)
+    }
 }

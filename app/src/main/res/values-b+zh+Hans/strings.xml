@@ -359,4 +359,29 @@
     <plurals name="period_fixed_summary">
         <item quantity="other">从 %2$s 起每 %1$d 天</item>
     </plurals>
+    <string name="spending_paid_from">支付来源</string>
+    <string name="spending_envelope_available">信封可用金额：%1$s</string>
+    <string name="envelope_picker_none">资金始终存放在信封中。请先创建一个信封。</string>
+    <string name="spending_sheet_edit_title">编辑支出</string>
+    <string name="spending_without_envelope">无信封</string>
+    <string name="overview_in_envelopes">信封中：%1$s</string>
+    <string name="overview_in_envelopes_with_spending">信封中：%1$s，支出用：%2$s</string>
+    <string name="queue_title">等待确认</string>
+    <string name="queue_no_envelope">未选择信封</string>
+    <string name="queue_skip">未发生</string>
+    <string name="queue_confirm_income">已收到</string>
+    <string name="queue_confirm_expense">已支付</string>
+    <string name="queue_sheet_income_title">收入：%1$s</string>
+    <string name="queue_sheet_expense_title">付款：%1$s</string>
+    <string name="queue_sheet_hint">计划于 %1$s。如金额不同请修改。</string>
+    <string name="queue_sheet_amount">实际金额</string>
+    <string name="queue_sheet_income_envelope">存入</string>
+    <string name="queue_confirmed">已确认</string>
+    <string name="queue_skipped">已标记为未发生</string>
+    <string name="event_field_envelope_income">存入信封</string>
+    <string name="event_field_envelope_expense">支付信封</string>
+    <string name="onboarding_envelope_name">主卡</string>
+    <plurals name="queue_hint">
+        <item quantity="other">有 %d 项操作已到期。确认后信封中的资金才会变动。</item>
+    </plurals>
 </resources>

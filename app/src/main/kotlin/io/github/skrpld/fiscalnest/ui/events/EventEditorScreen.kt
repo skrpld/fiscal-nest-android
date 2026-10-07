@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import io.github.skrpld.fiscalnest.R
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeStatus
 import io.github.skrpld.fiscalnest.domain.form.EventDraft
 import io.github.skrpld.fiscalnest.domain.form.EventField
 import io.github.skrpld.fiscalnest.domain.form.FieldError
@@ -54,12 +55,14 @@ import io.github.skrpld.fiscalnest.ui.common.LoadingContent
 import io.github.skrpld.fiscalnest.ui.common.MoneyField
 import io.github.skrpld.fiscalnest.ui.common.appViewModel
 import io.github.skrpld.fiscalnest.ui.common.labelRes
+import io.github.skrpld.fiscalnest.ui.envelopes.EnvelopePicker
 
 @Composable
 fun EventEditorRoute(
     eventId: String?,
     initialKind: EventKind?,
     onClose: () -> Unit,
+    onCreateEnvelope: () -> Unit,
     viewModel: EventEditorViewModel = appViewModel(key = "event-editor-$eventId") {
         EventEditorViewModel(it.repository, it.dateProvider, it.idGenerator, eventId, initialKind)
     },
@@ -74,6 +77,7 @@ fun EventEditorRoute(
         onSave = viewModel::save,
         onDelete = viewModel::delete,
         onClose = onClose,
+        onCreateEnvelope = onCreateEnvelope,
     )
 }
 
@@ -84,6 +88,7 @@ fun EventEditorScreen(
     onSave: () -> Unit,
     onDelete: () -> Unit,
     onClose: () -> Unit,
+    onCreateEnvelope: () -> Unit,
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     val draft = state.draft
@@ -125,7 +130,9 @@ fun EventEditorScreen(
                 EventForm(
                     draft = draft,
                     errors = state.errors,
+                    envelopes = state.envelopes,
                     onDraftChange = onDraftChange,
+                    onCreateEnvelope = onCreateEnvelope,
                     modifier = Modifier
                         .widthIn(max = 640.dp)
                         .verticalScroll(rememberScrollState())
@@ -154,7 +161,9 @@ fun EventEditorScreen(
 private fun EventForm(
     draft: EventDraft,
     errors: Map<EventField, FieldError>,
+    envelopes: List<EnvelopeStatus>,
     onDraftChange: (EventDraft) -> Unit,
+    onCreateEnvelope: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -176,6 +185,17 @@ private fun EventForm(
             onValueChange = { onDraftChange(draft.copy(amount = it)) },
             label = stringResource(R.string.event_field_amount),
             error = errors[EventField.AMOUNT],
+        )
+        EnvelopePicker(
+            envelopes = envelopes,
+            selectedId = draft.envelopeId,
+            onSelect = { onDraftChange(draft.copy(envelopeId = it)) },
+            label = stringResource(
+                if (draft.kind == EventKind.INCOME) R.string.event_field_envelope_income else R.string.event_field_envelope_expense,
+            ),
+            error = errors[EventField.ENVELOPE],
+            onCreateEnvelope = onCreateEnvelope,
+            showAvailable = false,
         )
         FormLabel(stringResource(R.string.event_field_repeat))
         ChoiceChips(

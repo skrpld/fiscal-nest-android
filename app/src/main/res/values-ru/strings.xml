@@ -377,4 +377,32 @@
         <item quantity="many">Каждые %1$d дней с %2$s</item>
         <item quantity="other">Каждые %1$d дня с %2$s</item>
     </plurals>
+    <string name="spending_paid_from">Списать с</string>
+    <string name="spending_envelope_available">Доступно в конверте: %1$s</string>
+    <string name="envelope_picker_none">Деньги всегда хранятся в конвертах. Сначала создайте конверт.</string>
+    <string name="spending_sheet_edit_title">Изменить трату</string>
+    <string name="spending_without_envelope">Без конверта</string>
+    <string name="overview_in_envelopes">В конвертах: %1$s</string>
+    <string name="overview_in_envelopes_with_spending">В конвертах: %1$s, для трат: %2$s</string>
+    <string name="queue_title">Ожидает подтверждения</string>
+    <string name="queue_no_envelope">Конверт не выбран</string>
+    <string name="queue_skip">Не было</string>
+    <string name="queue_confirm_income">Получено</string>
+    <string name="queue_confirm_expense">Оплачено</string>
+    <string name="queue_sheet_income_title">Доход: %1$s</string>
+    <string name="queue_sheet_expense_title">Платёж: %1$s</string>
+    <string name="queue_sheet_hint">Запланировано на %1$s. Измените сумму, если она отличалась.</string>
+    <string name="queue_sheet_amount">Фактическая сумма</string>
+    <string name="queue_sheet_income_envelope">Зачислить в</string>
+    <string name="queue_confirmed">Подтверждено</string>
+    <string name="queue_skipped">Отмечено, что не было</string>
+    <string name="event_field_envelope_income">Зачисляется в конверт</string>
+    <string name="event_field_envelope_expense">Списывается с конверта</string>
+    <string name="onboarding_envelope_name">Основная карта</string>
+    <plurals name="queue_hint">
+        <item quantity="one">Наступила %d операция. Деньги в конвертах изменятся, только когда вы её подтвердите.</item>
+        <item quantity="few">Наступили %d операции. Деньги в конвертах изменятся, только когда вы их подтвердите.</item>
+        <item quantity="many">Наступило %d операций. Деньги в конвертах изменятся, только когда вы их подтвердите.</item>
+        <item quantity="other">Наступило %d операции. Деньги в конвертах изменятся, только когда вы их подтвердите.</item>
+    </plurals>
 </resources>

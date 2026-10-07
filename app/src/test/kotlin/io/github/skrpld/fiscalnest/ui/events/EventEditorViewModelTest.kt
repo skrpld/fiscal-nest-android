@@ -40,6 +40,8 @@ class EventEditorViewModelTest {
         assertTrue(viewModel.uiState.isNew)
         assertEquals(EventKind.INCOME, draft.kind)
         assertEquals(Today, draft.startDate)
+        assertEquals("card", draft.envelopeId)
+        assertEquals(listOf("card"), viewModel.uiState.envelopes.map { it.envelope.id })
 
         viewModel.onDraftChange(draft.copy(name = "Bonus", amount = "10 000", recurrenceType = RecurrenceType.ONCE))
         viewModel.save()
@@ -50,6 +52,21 @@ class EventEditorViewModelTest {
         assertEquals("Bonus", saved.name)
         assertDecimal("10000", saved.amount)
         assertEquals(Recurrence.Once, saved.recurrence)
+        assertEquals("card", saved.envelopeId)
+    }
+
+    @Test
+    fun `an event saved without an envelope needs one when edited`() = runTest {
+        val repository = InMemoryBudgetRepository(sampleData().let { data -> data.copy(events = data.events.map { it.copy(envelopeId = null) }) })
+        val viewModel = EventEditorViewModel(repository, FixedToday, sequentialIds(), eventId = "rent", initialKind = null)
+
+        viewModel.save()
+        assertEquals(FieldError.REQUIRED, viewModel.uiState.errors[EventField.ENVELOPE])
+        assertFalse(viewModel.uiState.isDone)
+
+        viewModel.onDraftChange(viewModel.uiState.draft!!.copy(envelopeId = "card"))
+        viewModel.save()
+        assertEquals("card", repository.current.events.first { it.id == "rent" }.envelopeId)
     }
 
     @Test

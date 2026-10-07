@@ -13,6 +13,8 @@ import androidx.lifecycle.viewModelScope
 import io.github.skrpld.fiscalnest.domain.data.BudgetRepository
 import io.github.skrpld.fiscalnest.domain.data.DateProvider
 import io.github.skrpld.fiscalnest.domain.data.IdGenerator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeCalculator
+import io.github.skrpld.fiscalnest.domain.envelope.EnvelopeStatus
 import io.github.skrpld.fiscalnest.domain.form.EventDraft
 import io.github.skrpld.fiscalnest.domain.form.EventField
 import io.github.skrpld.fiscalnest.domain.form.FieldError
@@ -20,6 +22,7 @@ import io.github.skrpld.fiscalnest.domain.form.Validation
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.deleteEvent
 import io.github.skrpld.fiscalnest.domain.model.upsertEvent
+import io.github.skrpld.fiscalnest.ui.envelopes.defaultEnvelopeId
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -29,17 +32,19 @@ import kotlinx.coroutines.launch
  * @property draft the form, `null` while an existing event loads
  * @property errors invalid fields; shown after the first save attempt
  * @property isDone the event was saved or deleted, or does not exist: the editor should close
+ * @property envelopes envelopes the money can arrive in or be paid from
  */
 data class EventEditorUiState(
     val isNew: Boolean,
     val draft: EventDraft?,
     val errors: Map<EventField, FieldError> = emptyMap(),
     val isDone: Boolean = false,
+    val envelopes: List<EnvelopeStatus> = emptyList(),
 )
 
 class EventEditorViewModel(
     private val repository: BudgetRepository,
-    dateProvider: DateProvider,
+    private val dateProvider: DateProvider,
     private val idGenerator: IdGenerator,
     private val eventId: String?,
     initialKind: EventKind?,
@@ -66,6 +71,22 @@ class EventEditorViewModel(
             viewModelScope.launch {
                 val event = repository.data.first().events.firstOrNull { it.id == eventId }
                 uiState = if (event == null) uiState.copy(isDone = true) else uiState.copy(draft = EventDraft.from(event))
+            }
+        }
+        // Follows the envelopes, so one created from the editor shows up and gets preselected.
+        viewModelScope.launch {
+            repository.data.collect { data ->
+                val envelopes = EnvelopeCalculator.summary(data, dateProvider.today()).statuses
+                val draft = uiState.draft
+                val keepsEnvelope = draft?.envelopeId != null && envelopes.any { it.envelope.id == draft.envelopeId }
+                uiState = uiState.copy(
+                    envelopes = envelopes,
+                    draft = if (draft != null && !keepsEnvelope && eventId == null) {
+                        draft.copy(envelopeId = envelopes.defaultEnvelopeId())
+                    } else {
+                        draft
+                    },
+                )
             }
         }
     }

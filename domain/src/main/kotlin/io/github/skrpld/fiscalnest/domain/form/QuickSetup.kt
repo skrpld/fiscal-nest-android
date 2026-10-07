@@ -7,10 +7,13 @@ package io.github.skrpld.fiscalnest.domain.form
 
 import io.github.skrpld.fiscalnest.domain.model.AppData
 import io.github.skrpld.fiscalnest.domain.model.BudgetEvent
+import io.github.skrpld.fiscalnest.domain.model.Envelope
+import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.Limits
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
+import io.github.skrpld.fiscalnest.domain.period.PeriodResolver
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.YearMonth
@@ -64,19 +67,33 @@ data class QuickSetupDraft(
  *
  * The income becomes a monthly event on the pay day, starting from the latest pay day up to
  * [today] so that the current period already counts it. The budget period then starts on the
- * pay day, capped at [Limits.MAX_MONTHLY_START_DAY].
+ * pay day, capped at [Limits.MAX_MONTHLY_START_DAY]. Money is always kept in envelopes, so the
+ * income arrives in the first envelope with the [EnvelopeRole.SPENDING] role, which is created
+ * when there is none. Until the user has answered for any occurrence, the confirmation queue
+ * restarts at the new period, so the latest income is offered for confirmation right away.
  *
  * @param incomeId id of the income event
  * @param incomeName label of the income event, in the user's language
+ * @param envelopeId id of the spending envelope, if one has to be created
+ * @param envelopeName name of the spending envelope, in the user's language
  */
 fun AppData.applyQuickSetup(
     values: QuickSetupValues,
     incomeId: String,
     incomeName: String,
+    envelopeId: String,
+    envelopeName: String,
     today: LocalDate,
 ): AppData {
     val payDay = values.payDay
     val income = values.income
+    val existingEnvelope = envelopes.firstOrNull { it.role == EnvelopeRole.SPENDING }
+    val needsEnvelope = income != null && payDay != null && existingEnvelope == null
+    val newEnvelopes = if (needsEnvelope) {
+        envelopes + Envelope(id = envelopeId, name = envelopeName.take(Limits.MAX_NAME_LENGTH), role = EnvelopeRole.SPENDING)
+    } else {
+        envelopes
+    }
     val newEvents = if (income != null && payDay != null) {
         events + BudgetEvent(
             id = incomeId,
@@ -85,18 +102,22 @@ fun AppData.applyQuickSetup(
             amount = income,
             recurrence = Recurrence.EveryNMonths(months = 1, dayOfMonth = payDay),
             startDate = latestPayDate(today, payDay),
+            envelopeId = existingEnvelope?.id ?: envelopeId,
         )
     } else {
         events
     }
+    val period = payDay?.let { PeriodRule.Monthly(it.coerceAtMost(Limits.MAX_MONTHLY_START_DAY)) } ?: settings.period
     return copy(
         events = newEvents,
+        envelopes = newEnvelopes,
         settings = settings.copy(
-            period = payDay?.let { PeriodRule.Monthly(it.coerceAtMost(Limits.MAX_MONTHLY_START_DAY)) } ?: settings.period,
+            period = period,
             cushionCurrent = values.cushionCurrent,
             cushionTarget = values.cushionTarget,
         ),
         onboardingCompleted = true,
+        queueStart = if (handledOccurrences.isEmpty()) PeriodResolver.periodContaining(period, today).start else queueStart,
     )
 }
 

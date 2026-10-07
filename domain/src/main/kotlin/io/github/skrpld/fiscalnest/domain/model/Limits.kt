@@ -52,6 +52,9 @@ object AppDataValidator {
             if (event.name.length > Limits.MAX_NAME_LENGTH) add("Event name too long: ${event.id}")
             if (!Limits.isValidAmount(event.amount)) add("Invalid event amount: ${event.id}")
             if (event.endDate != null && event.endDate < event.startDate) add("Event ends before it starts: ${event.id}")
+            if (event.envelopeId != null && data.envelopes.none { it.id == event.envelopeId }) {
+                add("Event paid through an unknown envelope: ${event.id}")
+            }
             when (val recurrence = event.recurrence) {
                 Recurrence.Once -> Unit
                 is Recurrence.EveryNDays ->
@@ -65,7 +68,12 @@ object AppDataValidator {
         data.spendings.forEach { spending ->
             if (!Limits.isValidAmount(spending.amount)) add("Invalid spending amount: ${spending.id}")
             if (spending.note.length > Limits.MAX_NOTE_LENGTH) add("Spending note too long: ${spending.id}")
+            if (spending.envelopeId != null && data.envelopes.none { it.id == spending.envelopeId }) {
+                add("Spending from an unknown envelope: ${spending.id}")
+            }
         }
+        val answers = data.handledOccurrences.map { it.eventId to it.date }
+        if (answers.size != answers.toSet().size) add("Duplicate answers for an event occurrence")
         addAll(settingsProblems(data.settings))
         addAll(envelopeProblems(data))
     }

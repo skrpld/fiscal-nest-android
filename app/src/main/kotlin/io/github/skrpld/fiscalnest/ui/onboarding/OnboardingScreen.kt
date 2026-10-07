@@ -86,14 +86,22 @@ class OnboardingViewModel(
      * Applies the quick setup and finishes the guide when the setup is valid.
      *
      * @param incomeName label of the income event, in the user's language
+     * @param envelopeName name of the envelope the income arrives in, in the user's language
      * @return the validation result, so the form can show field errors
      */
-    fun finishWithSetup(draft: QuickSetupDraft, incomeName: String): Validation<QuickSetupValues, QuickSetupField> {
+    fun finishWithSetup(
+        draft: QuickSetupDraft,
+        incomeName: String,
+        envelopeName: String,
+    ): Validation<QuickSetupValues, QuickSetupField> {
         val result = draft.validate()
         if (result is Validation.Valid) {
             val incomeId = idGenerator.newId()
+            val envelopeId = idGenerator.newId()
             val today = dateProvider.today()
-            viewModelScope.launch { repository.update { it.applyQuickSetup(result.value, incomeId, incomeName, today) } }
+            viewModelScope.launch {
+                repository.update { it.applyQuickSetup(result.value, incomeId, incomeName, envelopeId, envelopeName, today) }
+            }
         }
         return result
     }
@@ -128,10 +136,11 @@ fun OnboardingRoute(
     viewModel: OnboardingViewModel = appViewModel { OnboardingViewModel(it.repository, it.dateProvider, it.idGenerator) },
 ) {
     val incomeName = stringResource(R.string.onboarding_income_name)
+    val envelopeName = stringResource(R.string.onboarding_envelope_name)
     OnboardingScreen(
         showSetup = isFirstLaunch,
         onSubmitSetup = { draft ->
-            val result = viewModel.finishWithSetup(draft, incomeName)
+            val result = viewModel.finishWithSetup(draft, incomeName, envelopeName)
             if (result is Validation.Valid) onFinish()
             result
         },

@@ -33,7 +33,7 @@ class OnboardingViewModelTest {
 
     @Test
     fun `applies the quick setup`() = runTest {
-        val result = viewModel.finishWithSetup(QuickSetupDraft(income = "60000", payDay = "25"), incomeName = "Salary")
+        val result = viewModel.finishWithSetup(QuickSetupDraft(income = "60000", payDay = "25"), incomeName = "Salary", envelopeName = "Main card")
 
         assertTrue(result is Validation.Valid)
         val data = repository.current
@@ -43,11 +43,14 @@ class OnboardingViewModelTest {
         assertEquals(EventKind.INCOME, income.kind)
         assertDecimal("60000", income.amount)
         assertEquals(PeriodRule.Monthly(25), data.settings.period)
+        val card = data.envelopes.single()
+        assertEquals("Main card", card.name)
+        assertEquals(card.id, income.envelopeId)
     }
 
     @Test
     fun `keeps the guide open while the setup is invalid`() = runTest {
-        val result = viewModel.finishWithSetup(QuickSetupDraft(income = "60000"), incomeName = "Salary")
+        val result = viewModel.finishWithSetup(QuickSetupDraft(income = "60000"), incomeName = "Salary", envelopeName = "Main card")
 
         assertEquals(mapOf(QuickSetupField.PAY_DAY to FieldError.REQUIRED), (result as Validation.Invalid).errors)
         assertFalse(repository.current.onboardingCompleted)

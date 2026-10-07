@@ -16,6 +16,7 @@ import io.github.skrpld.fiscalnest.domain.model.EnvelopeRole
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
 import io.github.skrpld.fiscalnest.domain.model.Recurrence
+import io.github.skrpld.fiscalnest.domain.queue.ConfirmationQueue
 import io.github.skrpld.fiscalnest.domain.readmeData
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -111,9 +112,16 @@ class EnvelopeFormsTest {
     @Test
     fun `quick setup adds the income and aligns the period with the pay day`() {
         val values = (QuickSetupDraft("80000", "10", "5000", "30000").validate() as Validation.Valid).value
-        val data = AppData(onboardingCompleted = false).applyQuickSetup(values, "salary", "Salary", today)
+        val data = AppData(onboardingCompleted = false).applyQuickSetup(values, "salary", "Salary", "card", "Card", today)
 
         val income = data.events.single()
+        val card = data.envelopes.single()
+        assertEquals(EnvelopeRole.SPENDING, card.role)
+        assertEquals("Card", card.name)
+        assertEquals(card.id, income.envelopeId)
+        // The salary of 10 July is offered for confirmation, so the new card can be filled.
+        assertEquals(date(2026, 7, 10), data.queueStart)
+        assertEquals(listOf(date(2026, 7, 10)), ConfirmationQueue.pending(data, today).map { it.date })
         assertEquals(EventKind.INCOME, income.kind)
         assertEquals(Recurrence.EveryNMonths(1, 10), income.recurrence)
         assertEquals(date(2026, 7, 10), income.startDate)
@@ -125,11 +133,21 @@ class EnvelopeFormsTest {
     }
 
     @Test
+    fun `quick setup pays the income into an existing spending envelope`() {
+        val values = (QuickSetupDraft("80000", "10").validate() as Validation.Valid).value
+        val wallet = Envelope(id = "wallet", name = "Wallet", role = EnvelopeRole.SPENDING)
+        val data = AppData(envelopes = listOf(wallet)).applyQuickSetup(values, "salary", "Salary", "card", "Card", today)
+        assertEquals(listOf(wallet), data.envelopes)
+        assertEquals("wallet", data.events.single().envelopeId)
+    }
+
+    @Test
     fun `an empty quick setup only finishes the guide`() {
         val values = (QuickSetupDraft().validate() as Validation.Valid).value
         val start = readmeData.copy(onboardingCompleted = false)
-        val data = start.applyQuickSetup(values, "salary", "Salary", today)
+        val data = start.applyQuickSetup(values, "salary", "Salary", "card", "Card", today)
         assertEquals(start.events, data.events)
+        assertEquals(start.envelopes, data.envelopes)
         assertEquals(start.settings.period, data.settings.period)
         assertTrue(data.onboardingCompleted)
         assertFalse(start.onboardingCompleted)
@@ -141,6 +159,6 @@ class EnvelopeFormsTest {
         assertEquals(date(2026, 8, 1), latestPayDate(today, 1))
         assertEquals(date(2026, 7, 31), latestPayDate(today, 31))
         assertEquals(date(2026, 2, 28), latestPayDate(date(2026, 3, 5), 30))
-        assertEquals(PeriodRule.Monthly(28), AppData().applyQuickSetup(QuickSetupValues(null, 30, dec("0"), dec("0")), "i", "n", today).settings.period)
+        assertEquals(PeriodRule.Monthly(28), AppData().applyQuickSetup(QuickSetupValues(null, 30, dec("0"), dec("0")), "i", "n", "e", "E", today).settings.period)
     }
 }

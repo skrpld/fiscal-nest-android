@@ -35,12 +35,18 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,10 +64,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import fiscalnest.core.ForecastResult
 import io.github.skrpld.fiscalnest.R
 import io.github.skrpld.fiscalnest.domain.engine.ForecastOutcome
+import io.github.skrpld.fiscalnest.domain.form.OccurrenceDraft
+import io.github.skrpld.fiscalnest.domain.form.OccurrenceField
+import io.github.skrpld.fiscalnest.domain.form.OccurrenceValues
 import io.github.skrpld.fiscalnest.domain.form.SpendingDraft
 import io.github.skrpld.fiscalnest.domain.form.SpendingField
 import io.github.skrpld.fiscalnest.domain.form.Validation
 import io.github.skrpld.fiscalnest.domain.model.Spending
+import io.github.skrpld.fiscalnest.domain.queue.PendingOccurrence
 import io.github.skrpld.fiscalnest.ui.budget.BudgetBanners
 import io.github.skrpld.fiscalnest.ui.budget.CashCard
 import io.github.skrpld.fiscalnest.ui.budget.CushionCard
@@ -78,7 +88,8 @@ import io.github.skrpld.fiscalnest.ui.common.StatusBanner
 import io.github.skrpld.fiscalnest.ui.common.appViewModel
 import io.github.skrpld.fiscalnest.ui.common.tabular
 import io.github.skrpld.fiscalnest.ui.common.withContentPadding
-import io.github.skrpld.fiscalnest.ui.spending.AddSpendingSheet
+import io.github.skrpld.fiscalnest.ui.spending.SpendingSheet
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 /** Minimum card width; wider windows show several columns. */
@@ -89,6 +100,7 @@ fun OverviewRoute(
     onAddEvent: () -> Unit,
     onOpenPeriod: (Int) -> Unit,
     onOpenSpendings: () -> Unit,
+    onCreateEnvelope: () -> Unit,
     viewModel: OverviewViewModel = appViewModel { OverviewViewModel(it.repository, it.dateProvider, it.idGenerator) },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -96,9 +108,13 @@ fun OverviewRoute(
     OverviewScreen(
         state = state,
         onAddSpending = viewModel::addSpending,
+        onConfirmOccurrence = viewModel::confirm,
+        onSkipOccurrence = viewModel::skip,
+        onReopenOccurrence = viewModel::reopen,
         onAddEvent = onAddEvent,
         onOpenPeriod = onOpenPeriod,
         onOpenSpendings = onOpenSpendings,
+        onCreateEnvelope = onCreateEnvelope,
     )
 }
 
@@ -106,14 +122,32 @@ fun OverviewRoute(
 fun OverviewScreen(
     state: OverviewUiState,
     onAddSpending: (SpendingDraft) -> Validation<Spending, SpendingField>,
+    onConfirmOccurrence: (PendingOccurrence, OccurrenceDraft) -> Validation<OccurrenceValues, OccurrenceField>,
+    onSkipOccurrence: (PendingOccurrence) -> Unit,
+    onReopenOccurrence: (PendingOccurrence) -> Unit,
     onAddEvent: () -> Unit,
     onOpenPeriod: (Int) -> Unit,
     onOpenSpendings: () -> Unit,
+    onCreateEnvelope: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var showSpendingSheet by rememberSaveable { mutableStateOf(false) }
+    // The occurrence being confirmed, as "eventId@epochDay" so that it survives recreation.
+    var confirmingKey by rememberSaveable { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val confirmedMessage = stringResource(R.string.queue_confirmed)
+    val skippedMessage = stringResource(R.string.queue_skipped)
+    val undoLabel = stringResource(R.string.action_undo)
+    val offerUndo: (PendingOccurrence, String) -> Unit = { occurrence, message ->
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(message, actionLabel = undoLabel, duration = SnackbarDuration.Short)
+            if (result == SnackbarResult.ActionPerformed) onReopenOccurrence(occurrence)
+        }
+    }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             LargeTopAppBar(
                 title = { Text(stringResource(R.string.overview_title)) },
@@ -138,17 +172,47 @@ fun OverviewScreen(
                 onAddEvent = onAddEvent,
                 onOpenPeriod = onOpenPeriod,
                 onOpenSpendings = onOpenSpendings,
+                onConfirmOccurrence = { confirmingKey = it.key },
+                onSkipOccurrence = { occurrence ->
+                    onSkipOccurrence(occurrence)
+                    offerUndo(occurrence, skippedMessage)
+                },
             )
         }
     }
     if (showSpendingSheet && state is OverviewUiState.Ready) {
-        AddSpendingSheet(
+        SpendingSheet(
             today = state.today,
+            envelopes = state.envelopes,
             onSubmit = onAddSpending,
+            onCreateEnvelope = {
+                showSpendingSheet = false
+                onCreateEnvelope()
+            },
             onDismiss = { showSpendingSheet = false },
         )
     }
+    val ready = state as? OverviewUiState.Ready
+    val confirming = ready?.pending?.firstOrNull { it.key == confirmingKey }
+    if (ready != null && confirming != null) {
+        ConfirmOccurrenceSheet(
+            occurrence = confirming,
+            envelopes = ready.envelopes,
+            onSubmit = { draft ->
+                onConfirmOccurrence(confirming, draft).also { result ->
+                    if (result is Validation.Valid) offerUndo(confirming, confirmedMessage)
+                }
+            },
+            onCreateEnvelope = {
+                confirmingKey = null
+                onCreateEnvelope()
+            },
+            onDismiss = { confirmingKey = null },
+        )
+    }
 }
+
+private val PendingOccurrence.key: String get() = "${event.id}@${date.toEpochDay()}"
 
 @Composable
 private fun OverviewContent(
@@ -157,6 +221,8 @@ private fun OverviewContent(
     onAddEvent: () -> Unit,
     onOpenPeriod: (Int) -> Unit,
     onOpenSpendings: () -> Unit,
+    onConfirmOccurrence: (PendingOccurrence) -> Unit,
+    onSkipOccurrence: (PendingOccurrence) -> Unit,
 ) {
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Adaptive(CardColumnMinWidth),
@@ -177,7 +243,17 @@ private fun OverviewContent(
             is ForecastOutcome.Success -> {
                 val current = outcome.current
                 item(key = "hero", span = StaggeredGridItemSpan.FullLine) {
-                    HeroCard(outcome)
+                    HeroCard(outcome, state.envelopesTotal, state.spendingEnvelopesBalance)
+                }
+                if (state.pending.isNotEmpty()) {
+                    item(key = "queue", span = StaggeredGridItemSpan.FullLine) {
+                        QueueCard(
+                            pending = state.pending,
+                            envelopes = state.envelopes,
+                            onConfirm = onConfirmOccurrence,
+                            onSkip = onSkipOccurrence,
+                        )
+                    }
                 }
                 if (!state.hasEvents) {
                     item(key = "no-events", span = StaggeredGridItemSpan.FullLine) {
@@ -215,7 +291,7 @@ private fun OverviewContent(
 }
 
 @Composable
-private fun HeroCard(outcome: ForecastOutcome.Success) {
+private fun HeroCard(outcome: ForecastOutcome.Success, envelopesTotal: BigDecimal?, spendingBalance: BigDecimal?) {
     val current = outcome.current
     val money = LocalMoneyFormatter.current
     val dates = LocalDateTexts.current
@@ -242,6 +318,20 @@ private fun HeroCard(outcome: ForecastOutcome.Success) {
                 text = stringResource(R.string.overview_available_now, money.format(current.cashFlow.available)),
                 style = MaterialTheme.typography.bodyMedium,
             )
+            if (envelopesTotal != null) {
+                Text(
+                    text = if (spendingBalance != null) {
+                        stringResource(
+                            R.string.overview_in_envelopes_with_spending,
+                            money.format(envelopesTotal),
+                            money.format(spendingBalance),
+                        )
+                    } else {
+                        stringResource(R.string.overview_in_envelopes, money.format(envelopesTotal))
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             Spacer(Modifier.height(10.dp))
             Text(
                 text = stringResource(

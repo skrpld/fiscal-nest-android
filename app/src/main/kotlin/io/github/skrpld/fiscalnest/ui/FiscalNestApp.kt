@@ -74,6 +74,7 @@ fun FiscalNestApp(navController: NavHostController = rememberNavController()) {
                 eventId = route.eventId,
                 initialKind = route.kind?.let { name -> EventKind.entries.firstOrNull { it.name == name } },
                 onClose = dropUnlessResumed { navController.popBackStack() },
+                onCreateEnvelope = { navController.navigate(EnvelopeEditorDestination()) },
             )
         }
         composable<PeriodDetailDestination> { entry ->
@@ -83,7 +84,10 @@ fun FiscalNestApp(navController: NavHostController = rememberNavController()) {
             )
         }
         composable<SpendingsDestination> {
-            SpendingsRoute(onBack = dropUnlessResumed { navController.popBackStack() })
+            SpendingsRoute(
+                onBack = dropUnlessResumed { navController.popBackStack() },
+                onCreateEnvelope = { navController.navigate(EnvelopeEditorDestination()) },
+            )
         }
         composable<CushionLevelsDestination> {
             CushionLevelsRoute(onBack = dropUnlessResumed { navController.popBackStack() })

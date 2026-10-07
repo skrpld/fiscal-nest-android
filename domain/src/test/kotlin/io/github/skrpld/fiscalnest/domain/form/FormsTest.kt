@@ -9,6 +9,7 @@ import fiscalnest.core.PiggyBankMode
 import fiscalnest.core.TopupMode
 import io.github.skrpld.fiscalnest.domain.assertDecimal
 import io.github.skrpld.fiscalnest.domain.date
+import io.github.skrpld.fiscalnest.domain.dec
 import io.github.skrpld.fiscalnest.domain.model.BudgetSettings
 import io.github.skrpld.fiscalnest.domain.model.EventKind
 import io.github.skrpld.fiscalnest.domain.model.PeriodRule
@@ -26,12 +27,20 @@ class FormsTest {
     fun `new event draft reports missing fields`() {
         val result = EventDraft.new(today).validate("id")
         val invalid = assertInstanceOf(Validation.Invalid::class.java, result)
-        assertEquals(mapOf(EventField.NAME to FieldError.REQUIRED, EventField.AMOUNT to FieldError.REQUIRED), invalid.errors)
+        assertEquals(
+            mapOf(
+                EventField.NAME to FieldError.REQUIRED,
+                EventField.AMOUNT to FieldError.REQUIRED,
+                EventField.ENVELOPE to FieldError.REQUIRED,
+            ),
+            invalid.errors,
+        )
     }
 
     @Test
     fun `builds a monthly event`() {
-        val draft = EventDraft.new(today, EventKind.INCOME).copy(name = "  Salary ", amount = "50 000", dayOfMonth = "31")
+        val draft = EventDraft.new(today, EventKind.INCOME, envelopeId = "card")
+            .copy(name = "  Salary ", amount = "50 000", dayOfMonth = "31")
         val event = assertInstanceOf(Validation.Valid::class.java, draft.validate("salary")).value
         assertEquals("Salary", (event as io.github.skrpld.fiscalnest.domain.model.BudgetEvent).name)
         assertEquals(EventKind.INCOME, event.kind)
@@ -39,11 +48,12 @@ class FormsTest {
         assertEquals(Recurrence.EveryNMonths(1, 31), event.recurrence)
         assertEquals(today, event.startDate)
         assertNull(event.endDate)
+        assertEquals("card", event.envelopeId)
     }
 
     @Test
     fun `validates recurrence fields and dates`() {
-        val draft = EventDraft.new(today).copy(
+        val draft = EventDraft.new(today, envelopeId = "card").copy(
             name = "Gym",
             amount = "0",
             recurrenceType = RecurrenceType.DAYS,
@@ -63,7 +73,7 @@ class FormsTest {
 
     @Test
     fun `one-time events drop the end date`() {
-        val draft = EventDraft.new(today).copy(
+        val draft = EventDraft.new(today, envelopeId = "card").copy(
             name = "Ticket",
             amount = "1200",
             recurrenceType = RecurrenceType.ONCE,
@@ -80,6 +90,7 @@ class FormsTest {
                 Recurrence.Once,
                 today,
                 null,
+                "card",
             ),
             event,
         )
@@ -87,14 +98,57 @@ class FormsTest {
 
     @Test
     fun `event draft round-trips an existing event`() {
-        assertEquals(rent, (EventDraft.from(rent).validate(rent.id) as Validation.Valid).value)
+        val paid = rent.copy(envelopeId = "card")
+        assertEquals(paid, (EventDraft.from(paid).validate(paid.id) as Validation.Valid).value)
+    }
+
+    @Test
+    fun `events saved before envelopes were required need one when edited`() {
+        val invalid = assertInstanceOf(Validation.Invalid::class.java, EventDraft.from(rent).validate(rent.id))
+        assertEquals(mapOf(EventField.ENVELOPE to FieldError.REQUIRED), invalid.errors)
     }
 
     @Test
     fun `spending cannot be in the future`() {
-        val draft = SpendingDraft(amount = "10", date = today.plusDays(1))
-        val invalid = assertInstanceOf(Validation.Invalid::class.java, draft.validate("s", today))
+        val draft = SpendingDraft(amount = "10", date = today.plusDays(1), envelopeId = "card")
+        val invalid = assertInstanceOf(Validation.Invalid::class.java, draft.validate("s", today, available = dec("100")))
         assertEquals(mapOf(SpendingField.DATE to FieldError.IN_THE_FUTURE), invalid.errors)
+    }
+
+    @Test
+    fun `spending is always taken from an envelope and fits what it allows`() {
+        val noEnvelope = SpendingDraft(amount = "10", date = today)
+        assertEquals(
+            mapOf(SpendingField.ENVELOPE to FieldError.REQUIRED),
+            assertInstanceOf(Validation.Invalid::class.java, noEnvelope.validate("s", today, dec("100"))).errors,
+        )
+        val tooMuch = noEnvelope.copy(envelopeId = "card", amount = "150")
+        assertEquals(
+            mapOf(SpendingField.AMOUNT to FieldError.EXCEEDS_AVAILABLE),
+            assertInstanceOf(Validation.Invalid::class.java, tooMuch.validate("s", today, dec("100"))).errors,
+        )
+        val spending = (tooMuch.copy(amount = "100").validate("s", today, dec("100")) as Validation.Valid).value
+        assertEquals("card", spending.envelopeId)
+        assertEquals(tooMuch.copy(amount = "100"), SpendingDraft.from(spending))
+    }
+
+    @Test
+    fun `confirming an occurrence needs an envelope and money for an expense`() {
+        val draft = OccurrenceDraft.from(rent)
+        assertEquals("20000", draft.amount)
+        assertEquals(
+            mapOf(OccurrenceField.ENVELOPE to FieldError.REQUIRED),
+            assertInstanceOf(Validation.Invalid::class.java, draft.validate(isIncome = false, available = dec("0"))).errors,
+        )
+        val short = draft.copy(envelopeId = "card")
+        assertEquals(
+            mapOf(OccurrenceField.AMOUNT to FieldError.EXCEEDS_AVAILABLE),
+            assertInstanceOf(Validation.Invalid::class.java, short.validate(isIncome = false, available = dec("19999"))).errors,
+        )
+        assertEquals(
+            OccurrenceValues("card", dec("20000")),
+            (short.validate(isIncome = true, available = dec("0")) as Validation.Valid).value,
+        )
     }
 
     @Test

@@ -359,4 +359,29 @@
     <plurals name="period_fixed_summary">
         <item quantity="other">%2$s から %1$d日ごと</item>
     </plurals>
+    <string name="spending_paid_from">支払い元</string>
+    <string name="spending_envelope_available">封筒の利用可能額：%1$s</string>
+    <string name="envelope_picker_none">お金は常に封筒で管理します。まず封筒を作成してください。</string>
+    <string name="spending_sheet_edit_title">支出を編集</string>
+    <string name="spending_without_envelope">封筒なし</string>
+    <string name="overview_in_envelopes">封筒の合計：%1$s</string>
+    <string name="overview_in_envelopes_with_spending">封筒の合計：%1$s、支出用：%2$s</string>
+    <string name="queue_title">確認待ち</string>
+    <string name="queue_no_envelope">封筒が未選択</string>
+    <string name="queue_skip">発生しなかった</string>
+    <string name="queue_confirm_income">受け取った</string>
+    <string name="queue_confirm_expense">支払った</string>
+    <string name="queue_sheet_income_title">収入：%1$s</string>
+    <string name="queue_sheet_expense_title">支払い：%1$s</string>
+    <string name="queue_sheet_hint">%1$sの予定です。金額が違った場合は変更してください。</string>
+    <string name="queue_sheet_amount">実際の金額</string>
+    <string name="queue_sheet_income_envelope">入金先</string>
+    <string name="queue_confirmed">確認しました</string>
+    <string name="queue_skipped">発生しなかったと記録しました</string>
+    <string name="event_field_envelope_income">入金先の封筒</string>
+    <string name="event_field_envelope_expense">支払元の封筒</string>
+    <string name="onboarding_envelope_name">メインカード</string>
+    <plurals name="queue_hint">
+        <item quantity="other">%d 件の操作が予定日を迎えました。確認するまで封筒のお金は動きません。</item>
+    </plurals>
 </resources>

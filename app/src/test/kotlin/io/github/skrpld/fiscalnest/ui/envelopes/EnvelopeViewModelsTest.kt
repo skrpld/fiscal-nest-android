@@ -38,6 +38,9 @@ class EnvelopeViewModelsTest {
 
     private val cafes = Envelope("cafes", "Cafes", EnvelopePolicy.PeriodLimit(BigDecimal("500")))
 
+    /** The sample budget without its card, so that the tests below start without envelopes. */
+    private fun withoutEnvelopes() = sampleData().copy(envelopes = emptyList(), envelopeOperations = emptyList())
+
     private fun dataWithCafes() = sampleData().copy(
         envelopes = listOf(cafes),
         envelopeOperations = listOf(
@@ -47,7 +50,7 @@ class EnvelopeViewModelsTest {
 
     @Test
     fun `creates an envelope with its initial balance`() = runTest {
-        val repository = InMemoryBudgetRepository(sampleData())
+        val repository = InMemoryBudgetRepository(withoutEnvelopes())
         val viewModel = EnvelopeEditorViewModel(repository, FixedToday, sequentialIds(), envelopeId = null)
 
         val draft = viewModel.uiState.draft!!
@@ -69,7 +72,7 @@ class EnvelopeViewModelsTest {
 
     @Test
     fun `reports invalid envelope fields`() = runTest {
-        val repository = InMemoryBudgetRepository(sampleData())
+        val repository = InMemoryBudgetRepository(withoutEnvelopes())
         val viewModel = EnvelopeEditorViewModel(repository, FixedToday, sequentialIds(), envelopeId = null)
 
         viewModel.save(initialNote = "")
@@ -120,7 +123,7 @@ class EnvelopeViewModelsTest {
 
     @Test
     fun `saves the role and shows the planned amount of the role`() = runTest {
-        val repository = InMemoryBudgetRepository(sampleData())
+        val repository = InMemoryBudgetRepository(withoutEnvelopes())
         val editor = EnvelopeEditorViewModel(repository, FixedToday, sequentialIds(), envelopeId = null)
         editor.onDraftChange(editor.uiState.draft!!.copy(name = "Savings account", role = EnvelopeRole.PIGGY_BANK))
         editor.save(initialNote = "")

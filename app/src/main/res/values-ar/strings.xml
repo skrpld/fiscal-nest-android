@@ -389,4 +389,34 @@
         <item quantity="many">كل %1$d يومًا منذ %2$s</item>
         <item quantity="other">كل %1$d يوم منذ %2$s</item>
     </plurals>
+    <string name="spending_paid_from">الدفع من</string>
+    <string name="spending_envelope_available">المتاح في الظرف: %1$s</string>
+    <string name="envelope_picker_none">تُحفظ الأموال دائمًا في الظروف. أنشئ ظرفًا أولًا.</string>
+    <string name="spending_sheet_edit_title">تعديل الإنفاق</string>
+    <string name="spending_without_envelope">بدون ظرف</string>
+    <string name="overview_in_envelopes">في الظروف: %1$s</string>
+    <string name="overview_in_envelopes_with_spending">في الظروف: %1$s، للإنفاق: %2$s</string>
+    <string name="queue_title">بانتظار التأكيد</string>
+    <string name="queue_no_envelope">لم يُختر ظرف</string>
+    <string name="queue_skip">لم يحدث</string>
+    <string name="queue_confirm_income">تم الاستلام</string>
+    <string name="queue_confirm_expense">تم الدفع</string>
+    <string name="queue_sheet_income_title">دخل: %1$s</string>
+    <string name="queue_sheet_expense_title">دفعة: %1$s</string>
+    <string name="queue_sheet_hint">مخطط له في %1$s. غيّر المبلغ إن كان مختلفًا.</string>
+    <string name="queue_sheet_amount">المبلغ الفعلي</string>
+    <string name="queue_sheet_income_envelope">يُودع في</string>
+    <string name="queue_confirmed">تم التأكيد</string>
+    <string name="queue_skipped">تم التعليم بأنه لم يحدث</string>
+    <string name="event_field_envelope_income">ظرف الإيداع</string>
+    <string name="event_field_envelope_expense">ظرف الدفع</string>
+    <string name="onboarding_envelope_name">البطاقة الرئيسية</string>
+    <plurals name="queue_hint">
+        <item quantity="zero">لا توجد عمليات مستحقة.</item>
+        <item quantity="one">عملية واحدة مستحقة (%d). لا تتغير الأموال في الظروف إلا بعد تأكيدها.</item>
+        <item quantity="two">عمليتان مستحقتان (%d). لا تتغير الأموال في الظروف إلا بعد تأكيدهما.</item>
+        <item quantity="few">%d عمليات مستحقة. لا تتغير الأموال في الظروف إلا بعد تأكيدها.</item>
+        <item quantity="many">%d عملية مستحقة. لا تتغير الأموال في الظروف إلا بعد تأكيدها.</item>
+        <item quantity="other">%d عملية مستحقة. لا تتغير الأموال في الظروف إلا بعد تأكيدها.</item>
+    </plurals>
 </resources>
